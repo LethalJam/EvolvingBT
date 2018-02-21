@@ -23,8 +23,13 @@ public class ShooterAgent : MonoBehaviour {
     private Vector3 m_walkingDestinaton = Vector3.zero;
     private bool m_healthPackFound = false;
     private bool m_reloading = false;
+    private bool m_tookDamage = false;
+    private bool m_enemyLost = true;
 
     // Public adjustable variables
+    [Header("Turns on and off certain debugging variables.")]
+    public bool destinationLogs = true;
+    public bool invincible = false;
     [Header("Adjustable parameters for the agents behaviour.")]
     public float rotationSpeed = 1.0f;
     public float shootingCooldown = 0.2f;
@@ -48,7 +53,9 @@ public class ShooterAgent : MonoBehaviour {
         BulletBehaviour be_bullet = collision.gameObject.GetComponent<BulletBehaviour>();
         if (collision.tag != transform.name && be_bullet != null)
         {
-            m_health -= be_bullet.GetDamage();
+            m_tookDamage = true;
+            if (!invincible)
+                m_health -= be_bullet.GetDamage();
             Destroy(be_bullet.gameObject);
         }
         else if (collision.tag == "healthPack")
@@ -220,6 +227,7 @@ public class ShooterAgent : MonoBehaviour {
                         {
                             m_targetEnemy = eAgent.transform.position;
                             m_navAgent.updateRotation = false;
+                            m_enemyLost = false;
                             return true;
                         }
                     }
@@ -232,13 +240,41 @@ public class ShooterAgent : MonoBehaviour {
         // Keep in mind that the last seen position of the enemy is still stored!
         return false;
     }
+    // Cancel current path and turn the agent around.
+    public void TurnAround()
+    {
+        // Reset assumed variables
+        m_healthPackFound = false;
+        CancelPath();
+        // Calculate turnaround position.
+        Vector3 turnAround = transform.position - (transform.forward * 0.1f);
+        WalkTowards(turnAround);
+    }
+    // Avoid bullets by moving from side to side
+    public void Kite()
+    {
+        // Randomize which direction to kite.
+        float randomSign = Mathf.Sign(Random.Range(-1.0f, 1.0f));
+        // Calculate kiting position
+        Vector3 kiteVec = transform.position - (Quaternion.AngleAxis(randomSign * 45.0f, Vector3.up) * transform.forward) * 2.0f;
+        NavMeshHit hit;
+        // Find suitable navmesh point
+        NavMesh.SamplePosition(kiteVec, out hit, Mathf.Infinity, NavMesh.AllAreas);
+        // Move towards that point.
+        WalkTowards(hit.position);
+    }
 
     // Get functions
     public int Health { get { return m_health; } }
     public int Bullets { get { return m_bulletAmount; } }
+    public bool EnemyLost { get { return m_enemyLost;  } set { m_enemyLost = value; } }
     public Vector3 EnemyPosition { get { return m_targetEnemy; } set { m_targetEnemy = value; } }
+    public Vector3 WalkingDestination { get { return m_walkingDestinaton; } }
     public bool HasPath() { return m_navAgent.hasPath; }
     public bool HasFoundHealthpack() { return m_healthPackFound;  }
+    // Check if taken damage. If so, return true and mark as false.
+    public bool HasTakenDamage() { bool takenDamage = m_tookDamage == true ? true : false; m_tookDamage = false; return takenDamage;  }
+    public bool AtEnemyPosition () { return Vector3.Distance(transform.position, m_targetEnemy) <= 0.5f ? true : false; }
 
     // Main loop for updating the agent.
     private void Update()
@@ -248,7 +284,7 @@ public class ShooterAgent : MonoBehaviour {
             SetRandomDestination();
             WalkTowards(m_walkingDestinaton);
         }
-       
+
 
         //if (m_health <= 0 && m_myState != AgentState.dead)
         //{
@@ -263,21 +299,37 @@ public class ShooterAgent : MonoBehaviour {
         //    if (Bullets <= 0)
         //        Reload();
         //    if (EnemyVisible())
+        //    {
         //        ShootAt(m_targetEnemy);
 
-        //    if (m_health >= 50)
+        //        if (destinationLogs)
+        //            Debug.Log("Kiting");
+        //        Kite();
+        //    }
+
+        //    if (m_health >= 50 && !EnemyVisible())
         //    {
+        //        if (destinationLogs)
+        //            Debug.Log("Walking");
         //        if (testDestination != null)
         //            WalkTowards(testDestination.transform.position);
         //        else
         //            WalkTowards(Vector3.zero);
         //    }
-        //    else
+        //    else if (m_health <= 50)
         //    {
+        //        if (destinationLogs)
+        //            Debug.Log("Walking towards hp");
         //        if (!m_healthPackFound)
         //            CancelPath();
 
         //        GetHealthPack();
+        //    }
+        //    if (HasTakenDamage() && !EnemyVisible())
+        //    {
+        //        if (destinationLogs)
+        //            Debug.Log("Taking damage!");
+        //        TurnAround();
         //    }
 
 

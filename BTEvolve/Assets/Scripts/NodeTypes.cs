@@ -1,7 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+
 
 // ALL NODES ARE DENOTED BY N_
 
@@ -68,7 +68,18 @@ public class N_HasPath : N_AgentNode
         return m_agent.HasPath() == true ? Response.Success : Response.Failure;
     }
 }
+// Check to see if agent was shot recently. If so, return success and reset "takendamage" boolean.
+public class N_WasShot : N_AgentNode
+{
+    public N_WasShot (ShooterAgent agent) : base(agent)
+    {
+    }
 
+    public override Response Signal()
+    {
+        return m_agent.HasTakenDamage() == true ? Response.Success : Response.Failure;
+    }
+}
 
 // Action nodes.
 // Look up to and start walking towards nearest healthpack
@@ -115,8 +126,80 @@ public class N_Reload : N_AgentNode
         return m_agent.Reload() == true ? Response.Running : Response.Success;
     }
 }
+// Node that picks random points on the navmesh and patrols between them contionously.
+public class N_Patrol : N_AgentNode
+{
+    public N_Patrol (ShooterAgent agent) : base(agent)
+    { }
+    // Set random destination and walk towards it.
+    public override Response Signal()
+    {
+        // If no current path, randomize new one and walk towards it.
+        if (!m_agent.HasPath())
+        {
+            m_agent.SetRandomDestination();
+            m_agent.WalkTowards(m_agent.WalkingDestination);
+            return Response.Success;
+        }
+        else
+            return Response.Running;
+    }
+}
+// Cancels path towards current destination.
+public class N_CancelPath : N_AgentNode
+{
+    public N_CancelPath (ShooterAgent agent) : base(agent)
+    { }
+    // Cancels current agent path and always returns success.
+    public override Response Signal()
+    {
+        m_agent.CancelPath();
+        return Response.Success;
+    }
+}
+// Turns the agent 180 degrees.
+public class N_TurnAround : N_AgentNode
+{
+    public N_TurnAround (ShooterAgent agent) : base(agent)
+    {
+    }
+    public override Response Signal()
+    {
+        m_agent.TurnAround();
+        return Response.Success;
+    }
+}
+// Follow the enemy position if not lost.
+public class N_FollowEnemy : N_AgentNode
+{
+    public N_FollowEnemy (ShooterAgent agent) : base(agent)
+    {}
+    public override Response Signal()
+    {
+        // If not lost and has no path, walk towards enemy position
+        if (!m_agent.EnemyLost && !m_agent.HasPath())
+            m_agent.WalkTowards(m_agent.EnemyPosition);
+        else if (m_agent.AtEnemyPosition() && !m_agent.EnemyVisible())
+        {
+            m_agent.EnemyLost = true;
+            return Response.Failure;
+        }
 
-// IMPLEMENT "PATROL", "CANCELPATH", "FOLLOW ENEMY" AND "IS SHOT"
+        return Response.Running;
+    }
+}
+// Kite away backwards relative to forward facing position.
+public class N_Kite : N_AgentNode
+{
+    public N_Kite (ShooterAgent agent) : base(agent)
+    { }
+
+    public override Response Signal()
+    {
+        m_agent.Kite();
+        return Response.Success;
+    }
+}
 
 // Rootnode has one child and no parents
 public class N_Root
@@ -131,7 +214,6 @@ public class N_Root
         child.Signal();
     }
 }
-
 // Nodes for testing purposes. Always return success and failure.
 public class N_Success : Node
 {

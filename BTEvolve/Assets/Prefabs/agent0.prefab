@@ -142,9 +142,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7bfc932df2da4d4c8ed298c351f9514, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  destinationLogs: 1
+  invincible: 1
   rotationSpeed: 150
-  walkSpeed: 2
-  shootingCooldown: 0.3
+  shootingCooldown: 0.4
   reloadTime: 3
   bulletForce: 700
   visionRange: 20
