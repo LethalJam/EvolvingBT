@@ -13,6 +13,7 @@ public class ShooterAgent : MonoBehaviour {
     private float m_bulletTimer = 0.0f;
     private float m_reloadTimer = 0.0f;
     private int m_health = 100;
+    private int m_totalDamageTaken = 0;
     private int m_bulletMax = 20;
     private int m_bulletAmount = 20;
 
@@ -45,6 +46,19 @@ public class ShooterAgent : MonoBehaviour {
         playing, dead
     }
 
+    public void ResetValues()
+    {
+        m_health = 100;
+        m_totalDamageTaken = 0;
+        m_bulletAmount = m_bulletMax;
+        m_navAgent.ResetPath();
+        m_myState = AgentState.playing;
+        m_healthPackFound = false;
+        m_reloading = false;
+        m_tookDamage = false;
+        m_enemyLost = true;
+    }
+
     // Trigger related functions
     private void OnTriggerEnter(Collider collision)
     {
@@ -55,7 +69,13 @@ public class ShooterAgent : MonoBehaviour {
         {
             m_tookDamage = true;
             if (!invincible)
+            {
+                // Update health and record overall damage taken.
                 m_health -= be_bullet.GetDamage();
+                m_totalDamageTaken += be_bullet.GetDamage();
+            }
+
+
             Destroy(be_bullet.gameObject);
         }
         else if (collision.tag == "healthPack")
@@ -265,6 +285,8 @@ public class ShooterAgent : MonoBehaviour {
     }
 
     // Get functions
+    public AgentState StateOfAgent { get { return m_myState; } }
+    public int TotalDamageTaken { get { return m_totalDamageTaken; } }
     public int Health { get { return m_health; } }
     public int Bullets { get { return m_bulletAmount; } }
     public bool EnemyLost { get { return m_enemyLost;  } set { m_enemyLost = value; } }
@@ -276,63 +298,64 @@ public class ShooterAgent : MonoBehaviour {
     public bool HasTakenDamage() { bool takenDamage = m_tookDamage == true ? true : false; m_tookDamage = false; return takenDamage;  }
     public bool AtEnemyPosition () { return Vector3.Distance(transform.position, m_targetEnemy) <= 0.5f ? true : false; }
 
+
     // Main loop for updating the agent.
     private void Update()
     {
-        if (!HasPath())
+        //if (!HasPath())
+        //{
+        //    SetRandomDestination();
+        //    WalkTowards(m_walkingDestinaton);
+        //}
+
+
+        if (m_health <= 0 && m_myState != AgentState.dead)
         {
-            SetRandomDestination();
-            WalkTowards(m_walkingDestinaton);
+            Debug.Log(transform.gameObject.name + " died!");
+            m_myState = AgentState.dead;
+            if (destroyOnDeath)
+                Destroy(this.gameObject);
         }
 
+        if (m_myState == AgentState.playing)
+        {
+            if (Bullets <= 0)
+                Reload();
+            if (EnemyVisible())
+            {
+                ShootAt(m_targetEnemy);
 
-        //if (m_health <= 0 && m_myState != AgentState.dead)
-        //{
-        //    Debug.Log(transform.gameObject.name + " died!");
-        //    m_myState = AgentState.dead;
-        //    if (destroyOnDeath)
-        //        Destroy(this.gameObject);
-        //}
+                if (destinationLogs)
+                    Debug.Log("Kiting");
+                Kite();
+            }
 
-        //if (m_myState == AgentState.playing)
-        //{
-        //    if (Bullets <= 0)
-        //        Reload();
-        //    if (EnemyVisible())
-        //    {
-        //        ShootAt(m_targetEnemy);
+            if (m_health >= 50 && !EnemyVisible())
+            {
+                if (destinationLogs)
+                    Debug.Log("Walking");
+                if (testDestination != null)
+                    WalkTowards(testDestination.transform.position);
+                else
+                    WalkTowards(Vector3.zero);
+            }
+            else if (m_health <= 50)
+            {
+                if (destinationLogs)
+                    Debug.Log("Walking towards hp");
+                if (!m_healthPackFound)
+                    CancelPath();
 
-        //        if (destinationLogs)
-        //            Debug.Log("Kiting");
-        //        Kite();
-        //    }
-
-        //    if (m_health >= 50 && !EnemyVisible())
-        //    {
-        //        if (destinationLogs)
-        //            Debug.Log("Walking");
-        //        if (testDestination != null)
-        //            WalkTowards(testDestination.transform.position);
-        //        else
-        //            WalkTowards(Vector3.zero);
-        //    }
-        //    else if (m_health <= 50)
-        //    {
-        //        if (destinationLogs)
-        //            Debug.Log("Walking towards hp");
-        //        if (!m_healthPackFound)
-        //            CancelPath();
-
-        //        GetHealthPack();
-        //    }
-        //    if (HasTakenDamage() && !EnemyVisible())
-        //    {
-        //        if (destinationLogs)
-        //            Debug.Log("Taking damage!");
-        //        TurnAround();
-        //    }
+                GetHealthPack();
+            }
+            if (HasTakenDamage() && !EnemyVisible())
+            {
+                if (destinationLogs)
+                    Debug.Log("Taking damage!");
+                TurnAround();
+            }
 
 
-        //}
+        }
     }
 }

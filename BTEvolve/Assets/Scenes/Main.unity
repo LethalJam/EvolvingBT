@@ -781,7 +781,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agent0: {fileID: 991540964}
   agent1: {fileID: 513533698}
-  simulationTimeScale: 100
+  simulationTimeScale: 1
   startGameOnStartup: 1
 --- !u!1 &513533698 stripped
 GameObject:
@@ -1875,6 +1875,11 @@ Prefab:
       propertyPath: testDestination
       value: 
       objectReference: {fileID: 1058993878}
+    - target: {fileID: 114560281783681852, guid: a5ce88bd1f8d41442a68a8d29262568d,
+        type: 2}
+      propertyPath: invincible
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: a5ce88bd1f8d41442a68a8d29262568d, type: 2}
   m_IsPrefabParent: 0
