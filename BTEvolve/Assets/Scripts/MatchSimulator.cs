@@ -21,6 +21,7 @@ public class MatchSimulator : MonoBehaviour {
     public bool startGameOnStartup = false;
     // Public event called when match is over.
     public event EventHandler MatchOver;
+    public float matchTime = 60.0f;
 
     // Privates
     // Positioner och rotationer.
@@ -30,6 +31,8 @@ public class MatchSimulator : MonoBehaviour {
     private ShooterAgent behave_agent0, behave_agent1;
     private AgentResults result_agent0, result_agent1;
     private bool m_matchInProgress = false;
+    // Timer variables used for the match timing out when no agent is able to win.
+    private float m_matchTimer = 0.0f;
 
 
     protected virtual void OnMatchOver(EventArgs args)
@@ -43,6 +46,7 @@ public class MatchSimulator : MonoBehaviour {
 
 	void Awake ()
     {
+
         if (agent0 != null || agent1 != null)
         {
             // Set default values of agents when found.
@@ -70,6 +74,7 @@ public class MatchSimulator : MonoBehaviour {
         ResetAgents();
         Time.timeScale = simulationTimeScale;
         m_matchInProgress = true;
+        m_matchTimer = 0.0f;
     }
     // Reset the values for all agents.
     public void ResetAgents()
@@ -93,10 +98,15 @@ public class MatchSimulator : MonoBehaviour {
     {
         if (m_matchInProgress)
         {
+            m_matchTimer += Time.deltaTime;
             // If either of the agents died, end the match.
             if (behave_agent0.StateOfAgent == ShooterAgent.AgentState.dead
-                || behave_agent1.StateOfAgent == ShooterAgent.AgentState.dead)
+                || behave_agent1.StateOfAgent == ShooterAgent.AgentState.dead
+                || m_matchTimer >= matchTime)
             {
+                if (m_matchTimer >= matchTime)
+                    Debug.Log("Timed out!");
+
                 m_matchInProgress = false;
                 Time.timeScale = 0.0f;
                 // Damage taken/given agent0

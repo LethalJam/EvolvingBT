@@ -22,6 +22,7 @@ public class ShooterAgent : MonoBehaviour {
     private AgentState m_myState = AgentState.playing;
     private Vector3 m_targetEnemy = Vector3.zero;
     private Vector3 m_walkingDestinaton = Vector3.zero;
+    private GameObject m_targetHealthPack = null;
     private bool m_healthPackFound = false;
     private bool m_reloading = false;
     private bool m_tookDamage = false;
@@ -108,7 +109,7 @@ public class ShooterAgent : MonoBehaviour {
     }
 
     // Find nearest healthpack and walk towards it.
-    public void GetHealthPack()
+    public bool GetHealthPack()
     {
         if (!m_healthPackFound)
         {
@@ -122,13 +123,24 @@ public class ShooterAgent : MonoBehaviour {
                 {
                     float distance = Vector3.Magnitude(hp.transform.position - transform.position);
                     if (distance < Vector3.Magnitude(cheapestPosition - transform.position))
+                    {
+                        m_targetHealthPack = hp;
                         cheapestPosition = hp.transform.position;
+                    }
                 }
 
                 m_healthPackFound = true;
                 WalkTowards(cheapestPosition);
             }
+            else
+                return false;
         }
+        else
+        {
+            if (m_targetHealthPack == null)
+                m_healthPackFound = false;
+        }
+        return true;
     }
 
     // Turn towards and shoot against target position.
@@ -311,7 +323,7 @@ public class ShooterAgent : MonoBehaviour {
 
         if (m_health <= 0 && m_myState != AgentState.dead)
         {
-            Debug.Log(transform.gameObject.name + " died!");
+            Debug.Log(transform.gameObject.name + " died! " + Time.time);
             m_myState = AgentState.dead;
             if (destroyOnDeath)
                 Destroy(this.gameObject);

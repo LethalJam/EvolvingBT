@@ -12,11 +12,11 @@ public class GeneticAlgorithm : MonoBehaviour {
     {
         // Initialize values
         m_simulator = GameObject.FindGameObjectWithTag("matchSimulator").GetComponent<MatchSimulator>();
-        m_simulator.MatchOver += MatchSessionOver;
+        m_simulator.MatchOver += MatchSessionOver; ;
     }
 
     private void MatchSessionOver(object sender, EventArgs args)
     {
-        Debug.Log("Match over!");
+        Debug.Log("Match over! " + Time.time);
     }
 }
