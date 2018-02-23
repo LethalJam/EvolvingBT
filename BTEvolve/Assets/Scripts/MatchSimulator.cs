@@ -88,7 +88,7 @@ public class MatchSimulator : MonoBehaviour {
     }
 
     // Set the behaviour trees of the agents.
-    public void SetAgentBTs (AgentBT bt0, AgentBT bt1)
+    public void SetAgentBTs (N_Root bt0, N_Root bt1)
     {
 
     }

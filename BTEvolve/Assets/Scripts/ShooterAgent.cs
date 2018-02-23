@@ -47,6 +47,7 @@ public class ShooterAgent : MonoBehaviour {
         playing, dead
     }
 
+    #region Misc initialization
     public void ResetValues()
     {
         m_health = 100;
@@ -59,7 +60,7 @@ public class ShooterAgent : MonoBehaviour {
         m_tookDamage = false;
         m_enemyLost = true;
     }
-
+    
     // Trigger related functions
     private void OnTriggerEnter(Collider collision)
     {
@@ -107,7 +108,8 @@ public class ShooterAgent : MonoBehaviour {
         if (m_navAgent == null)
             Debug.LogError("No navmesh agent found on agent.");
     }
-
+    #endregion
+    
     // Find nearest healthpack and walk towards it.
     public bool GetHealthPack()
     {
@@ -133,7 +135,10 @@ public class ShooterAgent : MonoBehaviour {
                 WalkTowards(cheapestPosition);
             }
             else
+            {
                 return false;
+            }
+
         }
         else
         {
@@ -283,20 +288,25 @@ public class ShooterAgent : MonoBehaviour {
         WalkTowards(turnAround);
     }
     // Avoid bullets by moving from side to side
-    public void Kite()
+    public bool Kite()
     {
-        // Randomize which direction to kite.
-        float randomSign = Mathf.Sign(Random.Range(-1.0f, 1.0f));
-        // Calculate kiting position
-        Vector3 kiteVec = transform.position - (Quaternion.AngleAxis(randomSign * 45.0f, Vector3.up) * transform.forward) * 2.0f;
-        NavMeshHit hit;
-        // Find suitable navmesh point
-        NavMesh.SamplePosition(kiteVec, out hit, Mathf.Infinity, NavMesh.AllAreas);
-        // Move towards that point.
-        WalkTowards(hit.position);
+        if (!m_navAgent.hasPath)
+        {
+            // Randomize which direction to kite.
+            float randomSign = Mathf.Sign(Random.Range(-1.0f, 1.0f));
+            // Calculate kiting position
+            Vector3 kiteVec = transform.position - (Quaternion.AngleAxis(randomSign * 45.0f, Vector3.up) * transform.forward) * 2.0f;
+            NavMeshHit hit;
+            // Find suitable navmesh point
+            NavMesh.SamplePosition(kiteVec, out hit, Mathf.Infinity, NavMesh.AllAreas);
+            // Move towards that point.
+            WalkTowards(hit.position);
+            return true;
+        }
+        return false;
     }
 
-    // Get functions
+    #region Get Functions
     public AgentState StateOfAgent { get { return m_myState; } }
     public int TotalDamageTaken { get { return m_totalDamageTaken; } }
     public int Health { get { return m_health; } }
@@ -309,7 +319,7 @@ public class ShooterAgent : MonoBehaviour {
     // Check if taken damage. If so, return true and mark as false.
     public bool HasTakenDamage() { bool takenDamage = m_tookDamage == true ? true : false; m_tookDamage = false; return takenDamage;  }
     public bool AtEnemyPosition () { return Vector3.Distance(transform.position, m_targetEnemy) <= 0.5f ? true : false; }
-
+    #endregion
 
     // Main loop for updating the agent.
     private void Update()
@@ -342,7 +352,7 @@ public class ShooterAgent : MonoBehaviour {
                 Kite();
             }
 
-            if (m_health >= 50 && !EnemyVisible())
+            if (m_health > 50 && !EnemyVisible())
             {
                 if (destinationLogs)
                     Debug.Log("Walking");

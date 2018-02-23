@@ -14,7 +14,7 @@ public abstract class N_AgentNode : Node
         m_agent = agent;
     }
 }
-// Condition nodes.
+#region Condition nodes
 // Thresholds return Success if the value has reached the given threshold. Else, return failure.
 public class N_HealthThreshold : N_AgentNode
 {
@@ -70,8 +70,9 @@ public class N_WasShot : N_AgentNode
         return m_agent.HasTakenDamage() == true ? Response.Success : Response.Failure;
     }
 }
+#endregion
 
-// Action nodes.
+#region ActionNodes
 // Look up to and start walking towards nearest healthpack
 public class N_GotoHealthpack : N_AgentNode
 {
@@ -185,7 +186,7 @@ public class N_Kite : N_AgentNode
 
     public override Response Signal()
     {
-        m_agent.Kite();
-        return Response.Success;
+        return m_agent.Kite() == true ? Response.Success : Response.Running;
     }
 }
+#endregion

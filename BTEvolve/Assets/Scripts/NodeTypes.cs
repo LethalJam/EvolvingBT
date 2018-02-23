@@ -7,7 +7,7 @@ using System.Linq;
 public enum Response
 { Success, Failure, Running}
 
-// Node baseclass
+#region Basic nodes
 public abstract class Node {
     // Send signal to node.
     public abstract Response Signal();
@@ -40,16 +40,21 @@ public class N_Failure : Node
         return Response.Failure;
     }
 }
-
-// Decorator nodes
+#endregion
+#region Decorators
 public abstract class N_Decorator : Node
 {
     protected Node child;
+    public N_Decorator (Node child)
+    {
+        this.child = child;
+    }
 
     public Node Child { get { return child; } set { child = value; } }
 }
 public class N_DecFlip : N_Decorator
-{
+{   
+    public N_DecFlip(Node child) : base(child) { }
     // Flip success and failure to the opposite. Return response as usual.
     public override Response Signal()
     {
@@ -67,9 +72,17 @@ public class N_DecFlip : N_Decorator
         return Response.Failure;
     }
 }
-
-
-// Following nodes are compition nodes, signaling an arbitrary amount of child nodes.
+public class N_DecSuccess : N_Decorator
+{
+    public N_DecSuccess (Node child) : base(child) { }
+    public override Response Signal()
+    {
+        child.Signal();
+        return Response.Success;
+    }
+}
+#endregion
+#region Compositions
 public abstract class N_CompositionNode : Node
 {
     // Child nodes.
@@ -134,6 +147,11 @@ public class N_ProbabilitySelector : N_CompositionNode
     {
         base.AddChild(node);
         probabilityMapping.Add(node, 1.0f);
+    }
+    public void AddChild(Node node, float prob)
+    {
+        base.AddChild(node);
+        probabilityMapping.Add(node, prob);
     }
     public override void RemoveChild(Node node)
     {
@@ -221,3 +239,4 @@ public class N_ProbabilitySelector : N_CompositionNode
         return Response.Failure;
     }
 }
+#endregion
