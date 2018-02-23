@@ -331,53 +331,53 @@ public class ShooterAgent : MonoBehaviour {
         //}
 
 
-        if (m_health <= 0 && m_myState != AgentState.dead)
-        {
-            Debug.Log(transform.gameObject.name + " died! " + Time.time);
-            m_myState = AgentState.dead;
-            if (destroyOnDeath)
-                Destroy(this.gameObject);
-        }
+        //if (m_health <= 0 && m_myState != AgentState.dead)
+        //{
+        //    Debug.Log(transform.gameObject.name + " died! " + Time.time);
+        //    m_myState = AgentState.dead;
+        //    if (destroyOnDeath)
+        //        Destroy(this.gameObject);
+        //}
 
-        if (m_myState == AgentState.playing)
-        {
-            if (Bullets <= 0)
-                Reload();
-            if (EnemyVisible())
-            {
-                ShootAt(m_targetEnemy);
+        //if (m_myState == AgentState.playing)
+        //{
+        //    if (Bullets <= 0)
+        //        Reload();
+        //    if (EnemyVisible())
+        //    {
+        //        ShootAt(m_targetEnemy);
 
-                if (destinationLogs)
-                    Debug.Log("Kiting");
-                Kite();
-            }
+        //        if (destinationLogs)
+        //            Debug.Log("Kiting");
+        //        Kite();
+        //    }
 
-            if (m_health > 50 && !EnemyVisible())
-            {
-                if (destinationLogs)
-                    Debug.Log("Walking");
-                if (testDestination != null)
-                    WalkTowards(testDestination.transform.position);
-                else
-                    WalkTowards(Vector3.zero);
-            }
-            else if (m_health <= 50)
-            {
-                if (destinationLogs)
-                    Debug.Log("Walking towards hp");
-                if (!m_healthPackFound)
-                    CancelPath();
+        //    if (m_health > 50 && !EnemyVisible())
+        //    {
+        //        if (destinationLogs)
+        //            Debug.Log("Walking");
+        //        if (testDestination != null)
+        //            WalkTowards(testDestination.transform.position);
+        //        else
+        //            WalkTowards(Vector3.zero);
+        //    }
+        //    else if (m_health <= 50)
+        //    {
+        //        if (destinationLogs)
+        //            Debug.Log("Walking towards hp");
+        //        if (!m_healthPackFound)
+        //            CancelPath();
 
-                GetHealthPack();
-            }
-            if (HasTakenDamage() && !EnemyVisible())
-            {
-                if (destinationLogs)
-                    Debug.Log("Taking damage!");
-                TurnAround();
-            }
+        //        GetHealthPack();
+        //    }
+        //    if (HasTakenDamage() && !EnemyVisible())
+        //    {
+        //        if (destinationLogs)
+        //            Debug.Log("Taking damage!");
+        //        TurnAround();
+        //    }
 
 
-        }
+        //}
     }
 }

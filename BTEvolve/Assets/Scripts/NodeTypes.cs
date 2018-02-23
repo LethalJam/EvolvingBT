@@ -107,7 +107,7 @@ public class N_Sequence : N_CompositionNode
             // Signal child
             Response childResponse = n.Signal();
             if (childResponse == Response.Failure
-                && childResponse == Response.Running)
+                || childResponse == Response.Running)
             {
                 return childResponse;
             }
@@ -127,7 +127,7 @@ public class N_Selection : N_CompositionNode
             // Signal child
             Response childResponse = n.Signal();
             if (childResponse == Response.Success
-                && childResponse == Response.Running)
+                || childResponse == Response.Running)
             {
                 return childResponse;
             }

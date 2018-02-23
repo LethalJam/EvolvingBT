@@ -29,6 +29,7 @@ public class MatchSimulator : MonoBehaviour {
     private Quaternion startRot_agent0, startRot_agent1;
     // Used for direct interfacing with functions of the agent.
     private ShooterAgent behave_agent0, behave_agent1;
+    private AgentBT bt_agent0, bt_agent1;
     private AgentResults result_agent0, result_agent1;
     private bool m_matchInProgress = false;
     // Timer variables used for the match timing out when no agent is able to win.
@@ -56,6 +57,8 @@ public class MatchSimulator : MonoBehaviour {
             startRot_agent1 = agent1.transform.rotation;
             behave_agent0 = agent0.GetComponent<ShooterAgent>();
             behave_agent1 = agent1.GetComponent<ShooterAgent>();
+            bt_agent0 = agent0.GetComponent<AgentBT>();
+            bt_agent1 = agent1.GetComponent<AgentBT>();
             result_agent0 = new AgentResults();
             result_agent1 = new AgentResults();
         }
@@ -90,7 +93,8 @@ public class MatchSimulator : MonoBehaviour {
     // Set the behaviour trees of the agents.
     public void SetAgentBTs (N_Root bt0, N_Root bt1)
     {
-
+        bt_agent0.SetTree(bt0);
+        bt_agent1.SetTree(bt1);
     }
 
     // Contionously check the state of the agents/the match session.

@@ -4,11 +4,11 @@ using UnityEngine;
 
 
 
-public class BehaviourSubtrees : MonoBehaviour {
+public static class BehaviourSubtrees {
 
     // Returns true if health is above threshold or if no hp was found.
     // Returns running if in progress of going to hp.
-    public Node Tree_GetHealthpack (ShooterAgent agent, int threshold)
+    public static Node Tree_GetHealthpack (ShooterAgent agent, int threshold)
     {
         N_Selection hpTree = new N_Selection();
         N_DecFlip flipHealthCheck = new N_DecFlip(new N_HealthThreshold(agent, threshold));
@@ -21,7 +21,7 @@ public class BehaviourSubtrees : MonoBehaviour {
     }
 
     // Returns false if no enemy is in sights, returns false if in sights and agent shot.
-    public Node Tree_ShootAtEnemy (ShooterAgent agent)
+    public static Node Tree_ShootAtEnemy (ShooterAgent agent)
     {
         N_Sequence shootTree = new N_Sequence();
         shootTree.AddChild(new N_IsEnemyVisible(agent));
@@ -32,18 +32,18 @@ public class BehaviourSubtrees : MonoBehaviour {
 
     // Returns false if patroling and no enemy was found,
     // Returns success if patroling and enemy was found.
-    public Node Tree_Patrol (ShooterAgent agent)
+    public static Node Tree_Patrol (ShooterAgent agent)
     {
         N_Sequence patrolSequence = new N_Sequence();
         N_DecSuccess patrolSuccess = new N_DecSuccess(new N_Patrol(agent));
         patrolSequence.AddChild(patrolSuccess);
-        patrolSequence.AddChild(this.Tree_ShootAtEnemy(agent));
+        patrolSequence.AddChild(Tree_ShootAtEnemy(agent));
         return patrolSequence;
     }
 
     // Sequence for moving and then shooting
     // If an enemy is seen, their's a probability
-    public Node Tree_PatrolOrKite (ShooterAgent agent)
+    public static Node Tree_PatrolOrKite (ShooterAgent agent)
     {
         N_ProbabilitySelector kiteOrPatrol = new N_ProbabilitySelector();
         kiteOrPatrol.AddChild(new N_Kite(agent));
@@ -61,7 +61,7 @@ public class BehaviourSubtrees : MonoBehaviour {
 
         N_Sequence rootMoveThenShoot = new N_Sequence();
         rootMoveThenShoot.AddChild(enemyOrPatrol);
-        rootMoveThenShoot.AddChild(this.Tree_ShootAtEnemy(agent));
+        rootMoveThenShoot.AddChild(Tree_ShootAtEnemy(agent));
 
         return rootMoveThenShoot;
     }

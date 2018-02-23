@@ -6,11 +6,18 @@ public class AgentBT : MonoBehaviour {
 
     private N_Root btRoot = null;
 
+    private void Awake()
+    {
+        N_Root testTree = new N_Root();
+        testTree.Child = BehaviourSubtrees.Tree_Patrol(gameObject.GetComponent<ShooterAgent>());
+        SetTree(testTree);
+    }
+
     public void SetTree(N_Root treeRoot)
     {
         btRoot = treeRoot;
     }
-    private void Update()
+    private void FixedUpdate ()
     {
         if (btRoot != null)
         {

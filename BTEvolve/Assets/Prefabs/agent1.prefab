@@ -25,6 +25,7 @@ GameObject:
   - component: {fileID: 114229798277431916}
   - component: {fileID: 54207206552300158}
   - component: {fileID: 195070426018294822}
+  - component: {fileID: 114295939627406398}
   m_Layer: 0
   m_Name: agent1
   m_TagString: agent
@@ -143,7 +144,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   destinationLogs: 0
-  invincible: 1
+  invincible: 0
   rotationSpeed: 150
   shootingCooldown: 0.4
   reloadTime: 3
@@ -154,6 +155,17 @@ MonoBehaviour:
   obstructionMask:
     serializedVersion: 2
     m_Bits: 4294967291
+--- !u!114 &114295939627406398
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1331745257401276}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1fd9d2d803904f43ac7db3ba9069584, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!136 &136728159820056962
 CapsuleCollider:
   m_ObjectHideFlags: 1
