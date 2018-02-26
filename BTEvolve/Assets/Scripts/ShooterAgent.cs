@@ -42,6 +42,9 @@ public class ShooterAgent : MonoBehaviour {
     public Transform testDestination;
     public LayerMask obstructionMask;
 
+    // Crossover communication with events
+    private MatchSimulator m_simulator;
+
     public enum AgentState
     {
         patroling, kiting, dead
@@ -107,6 +110,10 @@ public class ShooterAgent : MonoBehaviour {
         m_navAgent = GetComponent<NavMeshAgent>();
         if (m_navAgent == null)
             Debug.LogError("No navmesh agent found on agent.");
+
+        m_simulator = GameObject.FindGameObjectWithTag("matchSimulator").GetComponent<MatchSimulator>();
+        if (m_simulator == null)
+            Debug.LogError("No MatchSimulator object was found in ShooterAgent");
     }
     #endregion
     
@@ -287,7 +294,7 @@ public class ShooterAgent : MonoBehaviour {
         Vector3 turnAround = transform.position - (transform.forward * 0.1f);
         WalkTowards(turnAround);
     }
-    // Avoid bullets by moving from side to side
+    // Avoid bullets by moving from side to side.
     public bool Kite()
     {
         if (!m_navAgent.hasPath || m_myState == AgentState.patroling)
@@ -333,10 +340,12 @@ public class ShooterAgent : MonoBehaviour {
         //}
 
 
-        if (m_health <= 0 && m_myState != AgentState.dead)
+        if (m_health <= 0 && m_myState != AgentState.dead
+            && m_simulator.MatchInProgress)
         {
-            //Debug.Log(transform.gameObject.name + " died! " + Time.time);
+            Debug.Log(transform.gameObject.name + " died! " + Time.time);
             m_myState = AgentState.dead;
+            m_simulator.EndMatch();
             if (destroyOnDeath)
                 Destroy(this.gameObject);
         }

@@ -35,7 +35,7 @@ public class MatchSimulator : MonoBehaviour {
     // Timer variables used for the match timing out when no agent is able to win.
     private float m_matchTimer = 0.0f;
 
-
+    #region Handlers for various events
     protected virtual void OnMatchOver(EventArgs args)
     {
         EventHandler handler = MatchOver;
@@ -44,8 +44,9 @@ public class MatchSimulator : MonoBehaviour {
             handler(this, args);
         }
     }
+    #endregion
 
-	void Awake ()
+    void Awake ()
     {
 
         if (agent0 != null || agent1 != null)
@@ -71,6 +72,7 @@ public class MatchSimulator : MonoBehaviour {
         else
             Time.timeScale = 0.0f;
     }
+
     // Reset the parameters for the purpose of initiating a new match session.
     public void StartMatch()
     {
@@ -104,28 +106,31 @@ public class MatchSimulator : MonoBehaviour {
         {
             m_matchTimer += Time.deltaTime;
             // If either of the agents died, end the match.
-            if (behave_agent0.StateOfAgent == ShooterAgent.AgentState.dead
-                || behave_agent1.StateOfAgent == ShooterAgent.AgentState.dead
-                || m_matchTimer >= matchTime)
+            if (m_matchTimer >= matchTime)
             {
                 if (m_matchTimer >= matchTime)
                     Debug.Log("Timed out!");
 
-                m_matchInProgress = false;
-                Time.timeScale = 0.0f;
-                // Damage taken/given agent0
-                result_agent0.damageTaken = behave_agent0.TotalDamageTaken;
-                result_agent0.damageGiven = behave_agent1.TotalDamageTaken;
-                // Damage taken/given agent1
-                result_agent1.damageTaken = behave_agent1.TotalDamageTaken;
-                result_agent1.damageGiven = behave_agent0.TotalDamageTaken;
-                // Set who won
-                result_agent0.winner = behave_agent0.StateOfAgent != ShooterAgent.AgentState.dead;
-                result_agent1.winner = behave_agent1.StateOfAgent != ShooterAgent.AgentState.dead;
-                // Invoke that a match is over.
-                MatchOver.Invoke(this, new EventArgs());
+                EndMatch();
             }
         }
+    }
+
+    public void EndMatch()
+    {
+        m_matchInProgress = false;
+        Time.timeScale = 0.0f;
+        // Damage taken/given agent0
+        result_agent0.damageTaken = behave_agent0.TotalDamageTaken;
+        result_agent0.damageGiven = behave_agent1.TotalDamageTaken;
+        // Damage taken/given agent1
+        result_agent1.damageTaken = behave_agent1.TotalDamageTaken;
+        result_agent1.damageGiven = behave_agent0.TotalDamageTaken;
+        // Set who won If both win => draw? GA determines this.
+        result_agent0.winner = behave_agent0.StateOfAgent != ShooterAgent.AgentState.dead;
+        result_agent1.winner = behave_agent1.StateOfAgent != ShooterAgent.AgentState.dead;
+        // Invoke that a match is over.
+        MatchOver.Invoke(this, new EventArgs());
     }
 
     // Get functions
