@@ -19,7 +19,7 @@ public class ShooterAgent : MonoBehaviour {
 
     // AI related privates
     private NavMeshAgent m_navAgent;
-    private AgentState m_myState = AgentState.playing;
+    private AgentState m_myState = AgentState.patroling;
     private Vector3 m_targetEnemy = Vector3.zero;
     private Vector3 m_walkingDestinaton = Vector3.zero;
     private GameObject m_targetHealthPack = null;
@@ -44,7 +44,7 @@ public class ShooterAgent : MonoBehaviour {
 
     public enum AgentState
     {
-        playing, dead
+        patroling, kiting, dead
     }
 
     #region Misc initialization
@@ -54,7 +54,7 @@ public class ShooterAgent : MonoBehaviour {
         m_totalDamageTaken = 0;
         m_bulletAmount = m_bulletMax;
         m_navAgent.ResetPath();
-        m_myState = AgentState.playing;
+        m_myState = AgentState.patroling;
         m_healthPackFound = false;
         m_reloading = false;
         m_tookDamage = false;
@@ -290,8 +290,10 @@ public class ShooterAgent : MonoBehaviour {
     // Avoid bullets by moving from side to side
     public bool Kite()
     {
-        if (!m_navAgent.hasPath)
+        if (!m_navAgent.hasPath || m_myState == AgentState.patroling)
         {
+            CancelPath();
+            m_myState = AgentState.kiting;
             // Randomize which direction to kite.
             float randomSign = Mathf.Sign(Random.Range(-1.0f, 1.0f));
             // Calculate kiting position
@@ -307,7 +309,7 @@ public class ShooterAgent : MonoBehaviour {
     }
 
     #region Get Functions
-    public AgentState StateOfAgent { get { return m_myState; } }
+    public AgentState StateOfAgent { get { return m_myState; } set { m_myState = value; } }
     public int TotalDamageTaken { get { return m_totalDamageTaken; } }
     public int Health { get { return m_health; } }
     public int Bullets { get { return m_bulletAmount; } }
@@ -322,7 +324,7 @@ public class ShooterAgent : MonoBehaviour {
     #endregion
 
     // Main loop for updating the agent.
-    private void Update()
+    private void FixedUpdate()
     {
         //if (!HasPath())
         //{
@@ -331,13 +333,13 @@ public class ShooterAgent : MonoBehaviour {
         //}
 
 
-        //if (m_health <= 0 && m_myState != AgentState.dead)
-        //{
-        //    Debug.Log(transform.gameObject.name + " died! " + Time.time);
-        //    m_myState = AgentState.dead;
-        //    if (destroyOnDeath)
-        //        Destroy(this.gameObject);
-        //}
+        if (m_health <= 0 && m_myState != AgentState.dead)
+        {
+            //Debug.Log(transform.gameObject.name + " died! " + Time.time);
+            m_myState = AgentState.dead;
+            if (destroyOnDeath)
+                Destroy(this.gameObject);
+        }
 
         //if (m_myState == AgentState.playing)
         //{

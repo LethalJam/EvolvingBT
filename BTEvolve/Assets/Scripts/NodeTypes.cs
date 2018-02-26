@@ -231,7 +231,11 @@ public class N_ProbabilitySelector : N_CompositionNode
             // If it succeeds, open up for the possibility of other nodes being chosen.
             Response childResponse = m_chosenNode.Signal();
             if (childResponse == Response.Success)
+            {
                 m_isNodeChosen = false;
+                //Debug.Log("Rechoose node.");
+            }
+
             return childResponse;
         }
 

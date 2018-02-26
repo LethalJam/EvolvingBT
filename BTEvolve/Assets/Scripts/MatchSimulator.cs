@@ -98,7 +98,7 @@ public class MatchSimulator : MonoBehaviour {
     }
 
     // Contionously check the state of the agents/the match session.
-    private void Update()
+    private void FixedUpdate()
     {
         if (m_matchInProgress)
         {

@@ -9,7 +9,7 @@ public class AgentBT : MonoBehaviour {
     private void Awake()
     {
         N_Root testTree = new N_Root();
-        testTree.Child = BehaviourSubtrees.Tree_Patrol(gameObject.GetComponent<ShooterAgent>());
+        testTree.Child = BehaviourSubtrees.Tree_PatrolOrKite(gameObject.GetComponent<ShooterAgent>());
         SetTree(testTree);
     }
 

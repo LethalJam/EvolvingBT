@@ -125,8 +125,9 @@ public class N_Patrol : N_AgentNode
     public override Response Signal()
     {
         // If no current path, randomize new one and walk towards it.
-        if (!m_agent.HasPath())
+        if (!m_agent.HasPath() || m_agent.StateOfAgent == ShooterAgent.AgentState.kiting)
         {
+            m_agent.StateOfAgent = ShooterAgent.AgentState.patroling;
             m_agent.SetRandomDestination();
             m_agent.WalkTowards(m_agent.WalkingDestination);
             return Response.Success;
