@@ -17,6 +17,8 @@ public class MatchSimulator : MonoBehaviour {
     [Tooltip("Determines the timescale of each simulation. 1 is default.")]
     [Range(0.1f, 100.0f)]
     public float simulationTimeScale = 1.0f;
+    [Range(0.1f, 100.0f)]
+    public float liveSimulationScale = 1.0f;
     //public bool pauseOnStartup = false;
     public bool startGameOnStartup = false;
     // Public event called when match is over.
@@ -48,7 +50,7 @@ public class MatchSimulator : MonoBehaviour {
 
     void Awake ()
     {
-
+        liveSimulationScale = simulationTimeScale;
         if (agent0 != null || agent1 != null)
         {
             // Set default values of agents when found.
@@ -99,6 +101,13 @@ public class MatchSimulator : MonoBehaviour {
         bt_agent1.SetTree(bt1);
     }
 
+
+    private void Update()
+    {
+        // Change the live simulation scale using the given variable.
+        if (liveSimulationScale != Time.timeScale)
+            Time.timeScale = liveSimulationScale;
+    }
     // Contionously check the state of the agents/the match session.
     private void FixedUpdate()
     {

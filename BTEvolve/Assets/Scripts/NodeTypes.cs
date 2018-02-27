@@ -88,7 +88,19 @@ public abstract class N_CompositionNode : Node
     // Child nodes.
     protected List<Node> children = new List<Node>();
 
-    public virtual void AddChild(Node node)
+    // Create a new list with the given node as the first element.
+    // Then, add the remaining elements from old list.
+    public virtual void AddFirst(Node node)
+    {
+        List<Node> newChildren = new List<Node> {node};
+        foreach (Node n in children)
+        {
+            newChildren.Add(n);
+        }
+        // Override old list of children with new one.
+        children = newChildren;
+    }
+    public virtual void AddLast(Node node)
     {
         children.Add(node);
     }
@@ -143,14 +155,25 @@ public class N_ProbabilitySelector : N_CompositionNode
     private bool m_isNodeChosen = false;
 
     // Modify add and remove to also map a probability value to each childNode.
-    public override void AddChild(Node node)
+    // If no probability weight is given, assume one.
+    public override void AddFirst(Node node)
     {
-        base.AddChild(node);
+        base.AddFirst(node);
         probabilityMapping.Add(node, 1.0f);
     }
-    public void AddChild(Node node, float prob)
+    public void AddFirst (Node node, float prob)
     {
-        base.AddChild(node);
+        base.AddFirst(node);
+        probabilityMapping.Add(node, prob);
+    }
+    public override void AddLast(Node node)
+    {
+        base.AddLast(node);
+        probabilityMapping.Add(node, 1.0f);
+    }
+    public void AddLast(Node node, float prob)
+    {
+        base.AddLast(node);
         probabilityMapping.Add(node, prob);
     }
     public override void RemoveChild(Node node)

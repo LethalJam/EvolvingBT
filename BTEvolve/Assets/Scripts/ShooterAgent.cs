@@ -41,6 +41,9 @@ public class ShooterAgent : MonoBehaviour {
     public bool destroyOnDeath = true;
     public Transform testDestination;
     public LayerMask obstructionMask;
+    [Tooltip("Buttons for debugging purposes.")]
+    public bool damageAgent = false;
+    public bool registerShot = false;
 
     // Crossover communication with events
     private MatchSimulator m_simulator;
@@ -139,6 +142,8 @@ public class ShooterAgent : MonoBehaviour {
                 }
 
                 m_healthPackFound = true;
+                // Cancel previous path and walk towards healthpack instead.
+                CancelPath();
                 WalkTowards(cheapestPosition);
             }
             else
@@ -163,10 +168,14 @@ public class ShooterAgent : MonoBehaviour {
         m_bulletTimer += Time.deltaTime;
 
         // If agent is finished rotating and the bullet-timer is up...
-        if (AimTowards(targetDir) && m_bulletTimer >= shootingCooldown && m_bulletAmount > 0)
+        if (AimTowards(targetDir) 
+            && m_bulletTimer >= shootingCooldown 
+            && m_bulletAmount > 0
+            && !m_reloading)
         {
             m_bulletTimer = 0.0f;
             --m_bulletAmount;
+            Debug.Log(m_bulletAmount);
             // Instantiate new bullet
             GameObject newBullet = GameObject.Instantiate(m_bulletPrefab);
             newBullet.transform.SetPositionAndRotation(transform.position, Quaternion.LookRotation(targetDir, Vector3.up));
@@ -288,10 +297,10 @@ public class ShooterAgent : MonoBehaviour {
     public void TurnAround()
     {
         // Reset assumed variables
-        m_healthPackFound = false;
+        //m_healthPackFound = false;
         CancelPath();
         // Calculate turnaround position.
-        Vector3 turnAround = transform.position - (transform.forward * 0.1f);
+        Vector3 turnAround = transform.position - (transform.forward * 2.0f);
         WalkTowards(turnAround);
     }
     // Avoid bullets by moving from side to side.
@@ -303,8 +312,9 @@ public class ShooterAgent : MonoBehaviour {
             m_myState = AgentState.kiting;
             // Randomize which direction to kite.
             float randomSign = Mathf.Sign(Random.Range(-1.0f, 1.0f));
+            float randomAngle = Random.Range(45.0f, 180.0f);
             // Calculate kiting position
-            Vector3 kiteVec = transform.position - (Quaternion.AngleAxis(randomSign * 45.0f, Vector3.up) * transform.forward) * 2.0f;
+            Vector3 kiteVec = transform.position - (Quaternion.AngleAxis(randomSign * randomAngle, Vector3.up) * transform.forward) * 3.0f;
             NavMeshHit hit;
             // Find suitable navmesh point
             NavMesh.SamplePosition(kiteVec, out hit, Mathf.Infinity, NavMesh.AllAreas);
@@ -329,6 +339,21 @@ public class ShooterAgent : MonoBehaviour {
     public bool HasTakenDamage() { bool takenDamage = m_tookDamage == true ? true : false; m_tookDamage = false; return takenDamage;  }
     public bool AtEnemyPosition () { return Vector3.Distance(transform.position, m_targetEnemy) <= 0.5f ? true : false; }
     #endregion
+
+    // Used for "button" update.
+    private void Update()
+    {
+        if (damageAgent)
+        {
+            m_health -= 10;
+            damageAgent = false;
+        }
+        if (registerShot)
+        {
+            m_tookDamage = true;
+            registerShot = false;
+        }
+    }
 
     // Main loop for updating the agent.
     private void FixedUpdate()

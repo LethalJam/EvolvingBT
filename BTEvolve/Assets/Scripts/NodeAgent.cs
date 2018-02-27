@@ -167,13 +167,23 @@ public class N_FollowEnemy : N_AgentNode
     { }
     public override Response Signal()
     {
-        // If not lost and has no path, walk towards enemy position
+        // If not lost and has no path, walk towards enemy position.
         if (!m_agent.EnemyLost && !m_agent.HasPath())
+        {
+            m_agent.CancelPath();
             m_agent.WalkTowards(m_agent.EnemyPosition);
+        }
+        // If the agent reached the enemypos yet there's no enemy in sight, return failure.
         else if (m_agent.AtEnemyPosition() && !m_agent.EnemyVisible())
         {
             m_agent.EnemyLost = true;
             return Response.Failure;
+        }
+        // When enemy is found, cancel following and return success.
+        else if (m_agent.EnemyVisible())
+        {
+            m_agent.CancelPath();
+            return Response.Success;
         }
 
         return Response.Running;
@@ -187,6 +197,7 @@ public class N_Kite : N_AgentNode
 
     public override Response Signal()
     {
+        Debug.Log("Kiting!");
         return m_agent.Kite() == true ? Response.Success : Response.Running;
     }
 }

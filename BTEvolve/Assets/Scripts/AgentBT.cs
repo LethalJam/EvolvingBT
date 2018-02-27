@@ -8,8 +8,16 @@ public class AgentBT : MonoBehaviour {
 
     private void Awake()
     {
+        ShooterAgent agent = gameObject.GetComponent<ShooterAgent>();
         N_Root testTree = new N_Root();
-        testTree.Child = BehaviourSubtrees.Tree_PatrolOrKite(gameObject.GetComponent<ShooterAgent>());
+
+        N_Sequence reloadSequence = new N_Sequence();
+        reloadSequence.AddLast(BehaviourSubtrees.Tree_ShootAtEnemy(agent));
+        reloadSequence.AddLast(BehaviourSubtrees.Tree_ReloadIfLow(agent, 5));
+        testTree.Child = reloadSequence;
+        //testTree.Child = BehaviourSubtrees.Tree_FollowEnemy(agent);
+        //testTree.Child = BehaviourSubtrees.Tree_PatrolOrKite(agent);
+        //testTree.Child = BehaviourSubtrees.Tree_PatrolOrKite(gameObject.GetComponent<ShooterAgent>());
         SetTree(testTree);
     }
 
