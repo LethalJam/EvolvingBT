@@ -105,7 +105,7 @@ public class MatchSimulator : MonoBehaviour {
     private void Update()
     {
         // Change the live simulation scale using the given variable.
-        if (liveSimulationScale != Time.timeScale)
+        if (liveSimulationScale != Time.timeScale && m_matchInProgress)
             Time.timeScale = liveSimulationScale;
     }
     // Contionously check the state of the agents/the match session.

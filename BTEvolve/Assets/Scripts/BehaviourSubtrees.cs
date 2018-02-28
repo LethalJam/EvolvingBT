@@ -38,15 +38,17 @@ public static class BehaviourSubtrees {
         return reloadSequence;
     }
 
-    // Returns failure if no enemy is in sights 
+    // Returns success if no enemy is in sights *** succ or fail?
     // Returns success if in sights and agent shot.
     public static Node Tree_ShootAtEnemy (ShooterAgent agent)
     {
         N_Sequence shootTree = new N_Sequence();
         shootTree.AddLast(new N_IsEnemyVisible(agent));
         shootTree.AddLast(new N_ShootAtEnemy(agent));
+        N_DecSuccess success = new N_DecSuccess(shootTree);
 
-        return shootTree;
+        return success;
+        //return shootTree;
     }
 
     // Returns success if path was found and setting destination.
@@ -63,26 +65,23 @@ public static class BehaviourSubtrees {
     // Sequence for moving by patroling or kiting.
     // If an enemy is spotted, there's a probability of the agent either patroling
     // or kiting. If no enemy, always patrol.
-    // Tree always returns success.
+    // Returns success if path found and started
+    // Returns running if in process of walking towards destination.
     public static Node Tree_PatrolOrKite (ShooterAgent agent)
     {
         N_ProbabilitySelector kiteOrPatrol = new N_ProbabilitySelector();
         kiteOrPatrol.AddLast(new N_Kite(agent));
         kiteOrPatrol.AddLast(new N_Patrol(agent));
-        N_DecSuccess kiteOrPatrolSuccess = new N_DecSuccess(kiteOrPatrol);
+        //N_DecSuccess kiteOrPatrolSuccess = new N_DecSuccess(kiteOrPatrol);
 
         N_Sequence enemyThenKiteOrPatrol = new N_Sequence();
         enemyThenKiteOrPatrol.AddLast(new N_IsEnemyVisible(agent));
-        enemyThenKiteOrPatrol.AddLast(kiteOrPatrolSuccess);
+        enemyThenKiteOrPatrol.AddLast(kiteOrPatrol);
 
-        N_DecSuccess patrolSuccess = new N_DecSuccess(new N_Patrol(agent));
+        //N_DecSuccess patrolSuccess = new N_DecSuccess(new N_Patrol(agent));
         N_Selection enemyOrPatrol = new N_Selection();
         enemyOrPatrol.AddLast(enemyThenKiteOrPatrol);
-        enemyOrPatrol.AddLast(patrolSuccess);
-
-        //N_Sequence rootMoveThenShoot = new N_Sequence();
-        //rootMoveThenShoot.AddLast(enemyOrPatrol);
-        //rootMoveThenShoot.AddLast(Tree_ShootAtEnemy(agent));
+        enemyOrPatrol.AddLast(new N_Patrol(agent));
 
         return enemyOrPatrol;
     }

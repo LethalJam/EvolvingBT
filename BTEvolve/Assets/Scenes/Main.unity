@@ -784,7 +784,7 @@ MonoBehaviour:
   simulationTimeScale: 2
   liveSimulationScale: 1
   startGameOnStartup: 1
-  matchTime: 600
+  matchTime: 120
 --- !u!1 &513533698 stripped
 GameObject:
   m_PrefabParentObject: {fileID: 1331745257401276, guid: 624c21732f65b9342bea0ecfb2bb0a9b,
@@ -1988,6 +1988,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d29d4e8625e72bd47a9579a71d256751, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  generations: 10
+  populationSize: 40
+  mutationRate: 0.05
 --- !u!4 &1996230616
 Transform:
   m_ObjectHideFlags: 0
@@ -2010,7 +2013,7 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4218289049787504, guid: 16edc9bca257eae449fdb38901fe5df1, type: 2}
       propertyPath: m_LocalPosition.x
-      value: -4.14
+      value: -2.05
       objectReference: {fileID: 0}
     - target: {fileID: 4218289049787504, guid: 16edc9bca257eae449fdb38901fe5df1, type: 2}
       propertyPath: m_LocalPosition.y
@@ -2018,7 +2021,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4218289049787504, guid: 16edc9bca257eae449fdb38901fe5df1, type: 2}
       propertyPath: m_LocalPosition.z
-      value: 3.92
+      value: 13.4
       objectReference: {fileID: 0}
     - target: {fileID: 4218289049787504, guid: 16edc9bca257eae449fdb38901fe5df1, type: 2}
       propertyPath: m_LocalRotation.x
