@@ -14,6 +14,8 @@ public class GeneticAlgorithm : MonoBehaviour {
         // Subroots are the nodes that act as roots for the various subtrees within
         // the tree of the genome.
         List<Node> subRoots;
+        // Condition nodes are saved seperately for use in mutation.
+        List<Node> conditions;
         // Damage taken and given are the latest updated values given from evaluation.
         // These are then taken into consideration when selecting genomes.
         int damageTaken = 0, damageGiven = 0;
@@ -28,10 +30,14 @@ public class GeneticAlgorithm : MonoBehaviour {
         {
             subRoots = new List<Node>();
             rootNode = root;
+            // Retrieve all condition nodes.
+            conditions = TreeOperations.RetrieveNodesOfType(rootNode, typeof(N_Condition));
         }
+
         // Set and get functions for various values.
         public N_Root RootNode { get { return rootNode; } set { rootNode = value; } }
         public List<Node> SubRoots { get { return subRoots; } set { subRoots = value; } }
+        public List<Node> Conditions { get { return conditions;  } set { conditions = value; } }
         public int DamageTaken { get { return damageTaken;  } set { damageTaken = value; } }
         public int DamageGiven { get { return damageGiven; } set { damageGiven = value; } }
     }
@@ -53,6 +59,7 @@ public class GeneticAlgorithm : MonoBehaviour {
     protected MatchSimulator m_simulator;
     protected List<Genome> m_population = new List<Genome>();
     protected List<Genome> m_childPop = new List<Genome>();
+    protected bool simulating = false;
 
     #region Initialization (Awake/Start)
     // Make sure that common GA functions are at lowest protected, not private.
@@ -76,13 +83,36 @@ public class GeneticAlgorithm : MonoBehaviour {
 
     protected void MatchSessionOver(object sender, EventArgs args)
     {
+        simulating = false;
         Debug.Log("Match over! " + Time.time);
     }
-
+    
     // Randomize a new BT using given defined subtrees and definitions.
+    // 1: Randomise starting composition.
+    // 2: Start attaching random subtrees of the chosen amount.
+    // 3: Add random chance of new composition node being added.
     protected N_Root RandomBT()
     {
-        throw new NotImplementedException();
+        N_Root root = new N_Root();
+
+        // First, randomize starting composition.
+        N_CompositionNode firstComp;
+        int randomComposition = UnityEngine.Random.Range(0, 2);
+        switch (randomComposition)
+        {
+            case 0:
+                firstComp = new N_Selection();
+                break;
+            case 1:
+                firstComp = new N_Sequence();
+                break;
+            case 2:
+                firstComp = new N_ProbabilitySelector();
+                break;
+        }
+
+
+        return root;
     }
 
     protected void Simulate()

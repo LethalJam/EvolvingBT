@@ -12,6 +12,7 @@ public class ShooterAgent : MonoBehaviour {
     private StaticGlobals m_globals;
     private float m_bulletTimer = 0.0f;
     private float m_reloadTimer = 0.0f;
+    private int m_maxHealth = 100;
     private int m_health = 100;
     private int m_totalDamageTaken = 0;
     private int m_bulletMax = 20;
@@ -56,7 +57,7 @@ public class ShooterAgent : MonoBehaviour {
     #region Misc initialization
     public void ResetValues()
     {
-        m_health = 100;
+        m_health = m_maxHealth;
         m_totalDamageTaken = 0;
         m_bulletAmount = m_bulletMax;
         m_navAgent.ResetPath();
@@ -88,8 +89,9 @@ public class ShooterAgent : MonoBehaviour {
         }
         else if (collision.tag == "healthPack")
         {
-            Debug.Log("Picked up healthpack!");
             m_health += 50;
+            if (m_health > m_maxHealth)
+                m_health = m_maxHealth;
             Destroy(collision.gameObject);
             m_healthPackFound = false;
         }
@@ -98,6 +100,7 @@ public class ShooterAgent : MonoBehaviour {
     // Start by initializing variables
     private void Awake()
     {
+        m_health = m_maxHealth;
         m_globals = GameObject.FindGameObjectWithTag("globals").GetComponent<StaticGlobals>();
         if (m_globals == null)
             Debug.LogError("No globals gameobject was found.");

@@ -15,8 +15,13 @@ public abstract class N_AgentNode : Node
     }
 }
 #region Condition nodes
+// Base class for identifying condition nodes.
+public abstract class N_Condition : N_AgentNode
+{
+    protected N_Condition (ShooterAgent agent) : base(agent) { }
+}
 // Thresholds return Success if the value has reached the given threshold. Else, return failure.
-public class N_HealthThreshold : N_AgentNode
+public class N_HealthThreshold : N_Condition
 {
     int healthThreshold;
     public N_HealthThreshold(ShooterAgent agent, int threshold) : base(agent)
@@ -32,7 +37,7 @@ public class N_HealthThreshold : N_AgentNode
         return m_agent.Health <= healthThreshold ? Response.Success : Response.Failure;
     }
 }
-public class N_AmmoThreshold : N_AgentNode
+public class N_AmmoThreshold : N_Condition
 {
     int ammoThreshold;
     public N_AmmoThreshold(ShooterAgent agent, int threshold) : base(agent)
@@ -48,7 +53,7 @@ public class N_AmmoThreshold : N_AgentNode
         return m_agent.Bullets <= ammoThreshold ? Response.Success : Response.Failure;
     }
 }
-public class N_HasPath : N_AgentNode
+public class N_HasPath : N_Condition
 {
     public N_HasPath(ShooterAgent agent) : base(agent)
     { }
@@ -59,7 +64,7 @@ public class N_HasPath : N_AgentNode
     }
 }
 // Check to see if agent was shot recently. If so, return success and reset "takendamage" boolean.
-public class N_WasShot : N_AgentNode
+public class N_WasShot : N_Condition
 {
     public N_WasShot(ShooterAgent agent) : base(agent)
     {

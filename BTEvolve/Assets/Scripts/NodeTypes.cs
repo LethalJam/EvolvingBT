@@ -108,6 +108,11 @@ public abstract class N_CompositionNode : Node
     {
         children.Remove(node);
     }
+
+    public List<Node> GetChildren ()
+    {
+        return children;
+    }
 }
 public class N_Sequence : N_CompositionNode
 {
