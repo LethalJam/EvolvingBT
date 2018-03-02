@@ -6,11 +6,12 @@ using UnityEngine;
 public class AgentBT : MonoBehaviour {
 
     private N_Root btRoot = null;
+    private ShooterAgent m_agent;
 
     private void Awake()
     {
-        ShooterAgent agent = gameObject.GetComponent<ShooterAgent>();
-        if (agent == null)
+        m_agent = gameObject.GetComponent<ShooterAgent>();
+        if (m_agent == null)
             Debug.Log("AgentBT not attached to agent GameObject.");
 
 
@@ -19,9 +20,9 @@ public class AgentBT : MonoBehaviour {
         N_Selection select = new N_Selection();        
 
         N_Sequence seq = new N_Sequence();
-        seq.AddLast(BehaviourSubtrees.Tree_PatrolOrKite(agent));
-        seq.AddFirst(BehaviourSubtrees.Tree_ShootAtEnemy(agent));
-        select.AddLast(BehaviourSubtrees.Tree_ReloadIfLow(agent, 5));
+        seq.AddLast(BehaviourSubtrees.Tree_PatrolOrKite(m_agent));
+        seq.AddFirst(BehaviourSubtrees.Tree_ShootAtEnemy(m_agent));
+        select.AddLast(BehaviourSubtrees.Tree_ReloadIfLow(m_agent, 5));
         select.AddLast(seq);
 
         testTree.Child = select;
@@ -34,6 +35,12 @@ public class AgentBT : MonoBehaviour {
     public void SetTree(N_Root treeRoot)
     {
         btRoot = treeRoot;
+        // Find all agentnodes and set their agent to be this one.
+        List<Node> agentNodes = TreeOperations.RetrieveNodesOfType(treeRoot, typeof(N_AgentNode));
+        foreach (N_AgentNode n in agentNodes)
+        {
+            n.SetAgent(m_agent);
+        }
     }
 
     // Run BT using timescaled FixedUpdate if a BT is attached.

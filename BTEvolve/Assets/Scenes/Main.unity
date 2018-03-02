@@ -1988,8 +1988,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d29d4e8625e72bd47a9579a71d256751, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generations: 10
+  evolveOnStart: 0
+  additionalCompChance: 0.3
+  generations: 100
   populationSize: 40
+  genomeSubtrees: 6
   mutationRate: 0.05
 --- !u!4 &1996230616
 Transform:

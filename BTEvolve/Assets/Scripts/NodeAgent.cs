@@ -13,6 +13,10 @@ public abstract class N_AgentNode : Node
     {
         m_agent = agent;
     }
+    public void SetAgent(ShooterAgent agent)
+    {
+        m_agent = agent;
+    }
 }
 #region Condition nodes
 // Base class for identifying condition nodes.

@@ -45,12 +45,17 @@ public class GeneticAlgorithm : MonoBehaviour {
 
     [Header("Start algorithm on startup of program?")]
     public bool evolveOnStart = false;
+    [Header("Adjust the chance for additional compositions being generated during randomization.")]
+    [Range(0.0f, 1.0f)]
+    public float additionalCompChance = 0.3f;
     // Adjustable parameters.
     [Header("Variables for adjusting the settings of the genetic algorithm.")]
     [Tooltip("Set amount of generations for the execution.")]
     public int generations = 10;
     [Tooltip("Set size of the population for each generation.")]
     public int populationSize = 40;
+    [Tooltip("Set the amount of subtrees within the genome.")]
+    public int genomeSubtrees = 6;
     [Tooltip("Set the probability of a random mutation occuring.( 0 - 100%) ")]
     [Range(0.0f, 1.0f)]
     public float mutationRate = 0.05f;
@@ -109,8 +114,60 @@ public class GeneticAlgorithm : MonoBehaviour {
             case 2:
                 firstComp = new N_ProbabilitySelector();
                 break;
+            default:
+                firstComp = null;
+                Debug.LogError("No comp was chosen for firstcomp in generation of BT.");
+                break;
         }
 
+        // Generate random subtrees 
+        for (int i = 0; i < genomeSubtrees; i++)
+        {
+            float randomChance = UnityEngine.Random.Range(0.0f, 1.0f);
+            if (randomChance < additionalCompChance)
+            {
+                // Attach new composition.
+            }
+            else // If not, attach random subtree instead.
+            {
+                int randomSubtreeIndex = UnityEngine.Random.Range(0, 6);
+                Node subtree;
+                int randomThreshold;
+                switch (randomSubtreeIndex)
+                {
+                    case 0:
+                        randomThreshold = UnityEngine.Random.Range(0, 100);
+                        subtree = BehaviourSubtrees.Tree_GetHealthpackIfLow(null, randomThreshold);
+                        break;
+                    case 1:
+                        randomThreshold = UnityEngine.Random.Range(0, 15);
+                        subtree = BehaviourSubtrees.Tree_ReloadIfLow(null, randomThreshold);
+                        break;
+                    case 2:
+                        subtree = BehaviourSubtrees.Tree_ShootAtEnemy(null);
+                        break;
+                    case 3:
+                        subtree = BehaviourSubtrees.Tree_Patrol(null);
+                        break;
+                    case 4:
+                        subtree = BehaviourSubtrees.Tree_PatrolOrKite(null);
+                        break;
+                    case 5:
+                        subtree = BehaviourSubtrees.Tree_TurnWhenShot(null);
+                        break;
+                    case 6:
+                        subtree = BehaviourSubtrees.Tree_FollowEnemy(null);
+                        break;
+                    default:
+                        subtree = null;
+                        Debug.LogError("No subtree was chosen in randomization." +
+                            " Random value of incorrect range?");
+                        break;
+                }
+            }
+        }
+
+        root.Child = firstComp;
 
         return root;
     }
@@ -119,12 +176,14 @@ public class GeneticAlgorithm : MonoBehaviour {
     {
 
     }
+
     protected void Select(out N_Root parent0, out N_Root parent1)
     {
         // Temporary
         parent0 = new N_Root();
         parent1 = new N_Root();
     }
+    // DONT FORGET TO DEEP COPY WHEN COMBINING!!!!!!!
     protected void Combine (out N_Root child0, out N_Root child1, N_Root parent0, N_Root parent1)
     {
         // Temporary

@@ -63,9 +63,9 @@ public static class BehaviourSubtrees {
     }
 
     // Sequence for moving by patroling or kiting.
-    // If an enemy is spotted, there's a probability of the agent either patroling
+    // If an enemy is spotted, there's a probability of the agent either patroling.
     // or kiting. If no enemy, always patrol.
-    // Returns success if path found and started
+    // Returns success if path found and started.
     // Returns running if in process of walking towards destination.
     public static Node Tree_PatrolOrKite (ShooterAgent agent)
     {
