@@ -46,7 +46,7 @@ public class GeneticAlgorithm : MonoBehaviour {
     [Header("Start algorithm on startup of program?")]
     public bool evolveOnStart = false;
     [Header("Adjust the chance for additional compositions being generated during randomization.")]
-    [Range(0.0f, 1.0f)]
+    [Range(0.0f, 0.8f)]
     public float additionalCompChance = 0.3f;
     // Adjustable parameters.
     [Header("Variables for adjusting the settings of the genetic algorithm.")]
@@ -93,78 +93,39 @@ public class GeneticAlgorithm : MonoBehaviour {
     }
     
     // Randomize a new BT using given defined subtrees and definitions.
-    // 1: Randomise starting composition.
-    // 2: Start attaching random subtrees of the chosen amount.
-    // 3: Add random chance of new composition node being added.
     protected N_Root RandomBT()
     {
         N_Root root = new N_Root();
 
         // First, randomize starting composition.
-        N_CompositionNode firstComp;
-        int randomComposition = UnityEngine.Random.Range(0, 2);
-        switch (randomComposition)
-        {
-            case 0:
-                firstComp = new N_Selection();
-                break;
-            case 1:
-                firstComp = new N_Sequence();
-                break;
-            case 2:
-                firstComp = new N_ProbabilitySelector();
-                break;
-            default:
-                firstComp = null;
-                Debug.LogError("No comp was chosen for firstcomp in generation of BT.");
-                break;
-        }
+        N_CompositionNode firstComp = RandomComp();
+        
+        N_CompositionNode currentComp = firstComp;
+        bool nestled = false;
 
         // Generate random subtrees 
         for (int i = 0; i < genomeSubtrees; i++)
         {
+            // Calculate random chance for adding a new composition as well
+            // as ending it.
             float randomChance = UnityEngine.Random.Range(0.0f, 1.0f);
-            if (randomChance < additionalCompChance)
+            if (randomChance < additionalCompChance && !nestled)
             {
-                // Attach new composition.
+                nestled = true;
+                N_CompositionNode subComp = RandomComp();
+
+                // Attach new composition and add a subtree to it.
+                currentComp.AddFirst(subComp);
+                currentComp = subComp;
             }
-            else // If not, attach random subtree instead.
+            else if (randomChance < (additionalCompChance+0.2f))
             {
-                int randomSubtreeIndex = UnityEngine.Random.Range(0, 6);
-                Node subtree;
-                int randomThreshold;
-                switch (randomSubtreeIndex)
-                {
-                    case 0:
-                        randomThreshold = UnityEngine.Random.Range(0, 100);
-                        subtree = BehaviourSubtrees.Tree_GetHealthpackIfLow(null, randomThreshold);
-                        break;
-                    case 1:
-                        randomThreshold = UnityEngine.Random.Range(0, 15);
-                        subtree = BehaviourSubtrees.Tree_ReloadIfLow(null, randomThreshold);
-                        break;
-                    case 2:
-                        subtree = BehaviourSubtrees.Tree_ShootAtEnemy(null);
-                        break;
-                    case 3:
-                        subtree = BehaviourSubtrees.Tree_Patrol(null);
-                        break;
-                    case 4:
-                        subtree = BehaviourSubtrees.Tree_PatrolOrKite(null);
-                        break;
-                    case 5:
-                        subtree = BehaviourSubtrees.Tree_TurnWhenShot(null);
-                        break;
-                    case 6:
-                        subtree = BehaviourSubtrees.Tree_FollowEnemy(null);
-                        break;
-                    default:
-                        subtree = null;
-                        Debug.LogError("No subtree was chosen in randomization." +
-                            " Random value of incorrect range?");
-                        break;
-                }
+                nestled = false;
+                currentComp = firstComp;
             }
+
+            // Lastly, add a random subtree to the current composition.
+             currentComp.AddFirst(RandomSubtree());
         }
 
         root.Child = firstComp;
@@ -172,8 +133,71 @@ public class GeneticAlgorithm : MonoBehaviour {
         return root;
     }
 
+    private Node RandomSubtree()
+    {
+        int randomSubtreeIndex = UnityEngine.Random.Range(0, 6);
+        Node subtree;
+        int randomThreshold;
+        switch (randomSubtreeIndex)
+        {
+            case 0:
+                randomThreshold = UnityEngine.Random.Range(0, 100);
+                subtree = BehaviourSubtrees.Tree_GetHealthpackIfLow(null, randomThreshold);
+                break;
+            case 1:
+                randomThreshold = UnityEngine.Random.Range(0, 15);
+                subtree = BehaviourSubtrees.Tree_ReloadIfLow(null, randomThreshold);
+                break;
+            case 2:
+                subtree = BehaviourSubtrees.Tree_ShootAtEnemy(null);
+                break;
+            case 3:
+                subtree = BehaviourSubtrees.Tree_Patrol(null);
+                break;
+            case 4:
+                subtree = BehaviourSubtrees.Tree_PatrolOrKite(null);
+                break;
+            case 5:
+                subtree = BehaviourSubtrees.Tree_TurnWhenShot(null);
+                break;
+            case 6:
+                subtree = BehaviourSubtrees.Tree_FollowEnemy(null);
+                break;
+            default:
+                subtree = null;
+                Debug.LogError("No subtree was chosen in randomization." +
+                    " Random value of incorrect range?");
+                break;
+        }
+        return subtree;
+    }
+
+    private N_CompositionNode RandomComp()
+    {
+        N_CompositionNode randomComp;
+        int randomComposition = UnityEngine.Random.Range(0, 2);
+        switch (randomComposition)
+        {
+            case 0:
+                randomComp = new N_Selection();
+                break;
+            case 1:
+                randomComp = new N_Sequence();
+                break;
+            case 2:
+                randomComp = new N_ProbabilitySelector();
+                break;
+            default:
+                randomComp = null;
+                Debug.LogError("No comp was chosen for generation of BT.");
+                break;
+        }
+        return randomComp;
+    }
+
     protected void Simulate()
     {
+        // Against best
 
     }
 

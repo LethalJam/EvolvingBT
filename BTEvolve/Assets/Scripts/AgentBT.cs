@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,6 +28,11 @@ public class AgentBT : MonoBehaviour {
 
         testTree.Child = select;
 
+        // Set the tree before being able to copy
+        SetTree(testTree);
+
+        testTree = GetCopy();
+
         SetTree(testTree);
     }
 
@@ -50,5 +56,48 @@ public class AgentBT : MonoBehaviour {
         {
             btRoot.Execute();
         }
+    }
+
+    // Deep copy tree and return new one.
+    public N_Root GetCopy()
+    {
+        // Creat initial required variables.
+        N_Root copyRoot = new N_Root();
+        Queue<Node> nodeCopies = new Queue<Node>();
+
+        // Start by copying roots child and adding its children to the queue.
+        //nodeCopies.Enqueue(copyRoot.Child);
+        Type copyType = btRoot.Child.GetType();
+
+        if (btRoot.Child.GetType().IsSubclassOf(typeof(N_CompositionNode)))
+        {
+            // Cast as composition.
+            N_CompositionNode comp = btRoot.Child as N_CompositionNode;
+
+            // Save children as comp.
+            List<Node> children = comp.GetChildren();
+            // Create new instance of the node.
+            copyRoot.Child = Activator.CreateInstance(copyType) as Node;
+            foreach (Node n in children)
+            {
+                n.Parent = copyRoot.Child;
+                nodeCopies.Enqueue(n);
+            }
+            N_CompositionNode copiedComp = copyRoot.Child as N_CompositionNode;
+            copiedComp.SetChildren(children);
+        }
+
+
+
+        //while (nodeCopies.Count > 0)
+        //{
+        //    Node current = nodeCopies.Dequeue();
+        //    if (current.GetType().IsSubclassOf(typeof(N_CompositionNode)))
+        //    {
+
+        //    }
+        //}
+
+        return copyRoot;
     }
 }

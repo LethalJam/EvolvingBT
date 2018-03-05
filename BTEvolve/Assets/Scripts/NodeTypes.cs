@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System;
+using System.Runtime.Serialization;
 
 
 // ALL NODES ARE DENOTED BY N_
@@ -8,7 +10,16 @@ public enum Response
 { Success, Failure, Running}
 
 #region Basic nodes
-public abstract class Node {
+public abstract class Node : ICloneable
+{
+    public object Clone()
+    {
+        return MemberwiseClone();
+    }
+
+    protected Node parent = null;
+
+    public Node Parent { get { return parent; } set { parent = value; } }
     // Send signal to node.
     public abstract Response Signal();
 }
@@ -92,6 +103,9 @@ public abstract class N_CompositionNode : Node
     // Then, add the remaining elements from old list.
     public virtual void AddFirst(Node node)
     {
+        // Set this node as arguments parent node.
+        node.Parent = this;
+
         List<Node> newChildren = new List<Node> {node};
         foreach (Node n in children)
         {
@@ -102,6 +116,9 @@ public abstract class N_CompositionNode : Node
     }
     public virtual void AddLast(Node node)
     {
+        // Set this node as arguments parent node.
+        node.Parent = this;
+
         children.Add(node);
     }
     public virtual void RemoveChild(Node node)
@@ -112,6 +129,10 @@ public abstract class N_CompositionNode : Node
     public List<Node> GetChildren ()
     {
         return children;
+    }
+    public void SetChildren(List<Node> newChildren)
+    {
+        children = newChildren;
     }
 }
 public class N_Sequence : N_CompositionNode
@@ -224,7 +245,7 @@ public class N_ProbabilitySelector : N_CompositionNode
             }
 
 
-            float random = Random.Range(0.0f, 1.0f);
+            float random = UnityEngine.Random.Range(0.0f, 1.0f);
             for (int i = 0; i < prob_actual.Count; i++)
             {
                 var current = prob_actual.ElementAt(i);
