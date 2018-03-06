@@ -65,19 +65,39 @@ public class AgentBT : MonoBehaviour {
         N_Root copyRoot = new N_Root();
         Queue<Node> nodeCopies = new Queue<Node>();
 
-        // Start by copying roots child and adding its children to the queue.
-        //nodeCopies.Enqueue(copyRoot.Child);
-        Type copyType = btRoot.Child.GetType();
+        // Start by copying initial composition.
+        if (btRoot.Child.GetType() == typeof(N_ProbabilitySelector))
+        {
+            // Cast as probability selector.
+            N_ProbabilitySelector probSelect = btRoot.Child as N_ProbabilitySelector;
 
-        if (btRoot.Child.GetType().IsSubclassOf(typeof(N_CompositionNode)))
+            // Save children of probselect.
+            List<Node> children = probSelect.GetChildren();
+
+            // Create new instance of the node.
+            N_ProbabilitySelector newSelector = new N_ProbabilitySelector();
+
+            // For each child, attach it to the new selector and add it to the queue.
+            foreach (Node n in children)
+            {
+                n.Parent = newSelector;
+                newSelector.AddFirst(n, probSelect.GetProbabilityWeight(n));
+                nodeCopies.Enqueue(n);
+            }
+
+            copyRoot.Child = newSelector;
+        }
+        else if (btRoot.Child.GetType().IsSubclassOf(typeof(N_CompositionNode)))
         {
             // Cast as composition.
             N_CompositionNode comp = btRoot.Child as N_CompositionNode;
 
-            // Save children as comp.
+            // Save children of comp.
             List<Node> children = comp.GetChildren();
             // Create new instance of the node.
+            Type copyType = btRoot.Child.GetType();
             copyRoot.Child = Activator.CreateInstance(copyType) as Node;
+
             foreach (Node n in children)
             {
                 n.Parent = copyRoot.Child;
@@ -88,15 +108,59 @@ public class AgentBT : MonoBehaviour {
         }
 
 
+        while (nodeCopies.Count > 0)
+        {
+            // Get current node by dequeueing.
+            Node current = nodeCopies.Dequeue();
+            Node parentNode = current.Parent;
+            // Create new instance of node.
+            Type copyType = btRoot.Child.GetType();
+            Node newNode = Activator.CreateInstance(copyType) as Node;
 
-        //while (nodeCopies.Count > 0)
-        //{
-        //    Node current = nodeCopies.Dequeue();
-        //    if (current.GetType().IsSubclassOf(typeof(N_CompositionNode)))
-        //    {
+            // Update coupling to the parent.
+            if (parentNode.GetType() == typeof(N_ProbabilitySelector))
+            {
+                N_ProbabilitySelector parentProb = parentNode as N_ProbabilitySelector;
+                // Remove old and add new with the same prob weight.
+                float prob = parentProb.GetProbabilityWeight(current);
+                parentProb.RemoveChild(current);
+                parentProb.AddFirst(newNode, prob);
+            }
+            else if (parentNode.GetType().IsSubclassOf(typeof(N_CompositionNode)))
+            {
+                N_CompositionNode parentComp = parentNode as N_CompositionNode;
+                // Remove old
+                parentComp.RemoveChild(current);
+                // Add new
+                parentComp.AddFirst(newNode);
+            }
+            else if (parentNode.GetType().IsSubclassOf(typeof(N_Decorator)))
+            {
+                N_Decorator parentDec = parentNode as N_Decorator;
+                // Remove old and set new.
+                parentDec.Child = newNode;
+            }
 
-        //    }
-        //}
+            if (current.GetType() == typeof(N_ProbabilitySelector))
+            {
+
+            }
+            // If current is a composition, add its children to the queue.
+            else if (current.GetType().IsSubclassOf(typeof(N_CompositionNode)))
+            {
+                N_CompositionNode currentComp = current as N_CompositionNode;
+                N_CompositionNode newComp = newNode as N_CompositionNode;
+                List<Node> children = currentComp.GetChildren();
+
+                // Add children to new comp and queue them up.
+                foreach (Node n in children)
+                {
+                    newComp.AddFirst(n);
+                    n.Parent = newComp;
+                    nodeCopies.Enqueue(n);
+                }
+            }
+        }
 
         return copyRoot;
     }

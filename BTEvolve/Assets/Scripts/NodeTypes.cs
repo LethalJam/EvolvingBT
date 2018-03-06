@@ -222,6 +222,14 @@ public class N_ProbabilitySelector : N_CompositionNode
         else
             Debug.LogError("SetProbabilityWeight: Trying to access non-existent node.");
     }
+    // Get the weight of the given node if there is one.
+    public float GetProbabilityWeight(Node node)
+    {
+        if (probabilityMapping.ContainsKey(node))
+            return probabilityMapping[node];
+        else
+            throw new AccessViolationException();
+    }
     
     public override Response Signal()
     {
