@@ -81,7 +81,7 @@ public class AgentBT : MonoBehaviour {
             foreach (Node n in children)
             {
                 n.Parent = newSelector;
-                newSelector.AddFirst(n, probSelect.GetProbabilityWeight(n));
+                newSelector.AddLast(n, probSelect.GetProbabilityWeight(n));
                 nodeCopies.Enqueue(n);
             }
 
@@ -114,8 +114,23 @@ public class AgentBT : MonoBehaviour {
             Node current = nodeCopies.Dequeue();
             Node parentNode = current.Parent;
             // Create new instance of node.
-            Type copyType = btRoot.Child.GetType();
-            Node newNode = Activator.CreateInstance(copyType) as Node;
+            Type copyType = current.GetType();
+
+            // Instantiate a new node and pass down parameters if needed.
+            Node newNode;
+            if (copyType.IsSubclassOf(typeof(N_Threshold)))
+            {
+                N_Threshold currentT = current as N_Threshold;
+                newNode = Activator.CreateInstance(copyType, m_agent, currentT.Threshold) as Node;
+            }
+            else if (copyType.IsSubclassOf(typeof(N_AgentNode)))
+            {
+                newNode = Activator.CreateInstance(copyType, new System.Object[] { m_agent }) as Node;
+            }
+            else
+            {
+                newNode = Activator.CreateInstance(copyType) as Node;
+            }
 
             // Update coupling to the parent.
             if (parentNode.GetType() == typeof(N_ProbabilitySelector))
@@ -124,7 +139,7 @@ public class AgentBT : MonoBehaviour {
                 // Remove old and add new with the same prob weight.
                 float prob = parentProb.GetProbabilityWeight(current);
                 parentProb.RemoveChild(current);
-                parentProb.AddFirst(newNode, prob);
+                parentProb.AddLast(newNode, prob);
             }
             else if (parentNode.GetType().IsSubclassOf(typeof(N_CompositionNode)))
             {
@@ -132,7 +147,7 @@ public class AgentBT : MonoBehaviour {
                 // Remove old
                 parentComp.RemoveChild(current);
                 // Add new
-                parentComp.AddFirst(newNode);
+                parentComp.AddLast(newNode);
             }
             else if (parentNode.GetType().IsSubclassOf(typeof(N_Decorator)))
             {
@@ -141,11 +156,22 @@ public class AgentBT : MonoBehaviour {
                 parentDec.Child = newNode;
             }
 
+            // If current is a composition, add its children to the queue.
             if (current.GetType() == typeof(N_ProbabilitySelector))
             {
+                N_ProbabilitySelector currentProb = current as N_ProbabilitySelector;
+                N_ProbabilitySelector newProb = newNode as N_ProbabilitySelector;
+                List<Node> children = currentProb.GetChildren();
 
+                // Add children to the new probselector and queue them up.
+                foreach (Node n in children)
+                {
+                    // Also transfer the prob weight.
+                    newProb.AddLast(n, currentProb.GetProbabilityWeight(n));
+                    n.Parent = newProb;
+                    nodeCopies.Enqueue(n);
+                }
             }
-            // If current is a composition, add its children to the queue.
             else if (current.GetType().IsSubclassOf(typeof(N_CompositionNode)))
             {
                 N_CompositionNode currentComp = current as N_CompositionNode;
@@ -155,10 +181,30 @@ public class AgentBT : MonoBehaviour {
                 // Add children to new comp and queue them up.
                 foreach (Node n in children)
                 {
-                    newComp.AddFirst(n);
+                    newComp.AddLast(n);
                     n.Parent = newComp;
                     nodeCopies.Enqueue(n);
                 }
+            }
+            // Also add children of decorators
+            else if (current.GetType().IsSubclassOf(typeof(N_Decorator)))
+            {
+                N_Decorator currentDec = current as N_Decorator;
+                N_Decorator newDec = newNode as N_Decorator;
+                Node decChild = currentDec.Child;
+
+                newDec.Child = decChild;
+                decChild.Parent = newDec;
+                nodeCopies.Enqueue(decChild);
+            }
+
+            // Also transfer the threshold value if there's one.
+            if (current.GetType().IsSubclassOf(typeof(N_Threshold)))
+            {
+                N_Threshold currentT = current as N_Threshold;
+                N_Threshold newT = newNode as N_Threshold;
+
+                newT.SetThreshold(currentT.Threshold);
             }
         }
 

@@ -60,12 +60,17 @@ public abstract class N_Decorator : Node
     {
         this.child = child;
     }
+    public N_Decorator()
+    {
+
+    }
 
     public Node Child { get { return child; } set { child = value; } }
 }
 public class N_DecFlip : N_Decorator
 {   
     public N_DecFlip(Node child) : base(child) { }
+    public N_DecFlip () { }
     // Flip success and failure to the opposite. Return response as usual.
     public override Response Signal()
     {
@@ -86,6 +91,7 @@ public class N_DecFlip : N_Decorator
 public class N_DecSuccess : N_Decorator
 {
     public N_DecSuccess (Node child) : base(child) { }
+    public N_DecSuccess () { }
     public override Response Signal()
     {
         child.Signal();

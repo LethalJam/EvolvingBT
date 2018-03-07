@@ -24,37 +24,44 @@ public abstract class N_Condition : N_AgentNode
 {
     protected N_Condition (ShooterAgent agent) : base(agent) { }
 }
-// Thresholds return Success if the value has reached the given threshold. Else, return failure.
-public class N_HealthThreshold : N_Condition
+
+public abstract class N_Threshold : N_Condition
 {
-    int healthThreshold;
-    public N_HealthThreshold(ShooterAgent agent, int threshold) : base(agent)
+    protected int threshold;
+
+    public N_Threshold(ShooterAgent agent, int threshold) : base(agent)
     {
-        healthThreshold = threshold;
+        SetThreshold(threshold);
     }
-    public void SetHealthThreshold(int threshold)
+    public void SetThreshold(int threshold)
     {
-        healthThreshold = threshold;
+        this.threshold = threshold;
     }
+
+    public int Threshold { get { return threshold; } }
+}
+
+// Thresholds return Success if the value has reached the given threshold. Else, return failure.
+public class N_HealthThreshold : N_Threshold
+{
+    public N_HealthThreshold(ShooterAgent agent, int threshold) : base(agent, threshold)
+    {
+    }
+
     public override Response Signal()
     {
-        return m_agent.Health <= healthThreshold ? Response.Success : Response.Failure;
+        return m_agent.Health <= threshold ? Response.Success : Response.Failure;
     }
 }
-public class N_AmmoThreshold : N_Condition
+public class N_AmmoThreshold : N_Threshold
 {
-    int ammoThreshold;
-    public N_AmmoThreshold(ShooterAgent agent, int threshold) : base(agent)
+    public N_AmmoThreshold(ShooterAgent agent, int threshold) : base(agent, threshold)
     {
-        ammoThreshold = threshold;
     }
-    public void SetAmmoThreshold(int threshold)
-    {
-        ammoThreshold = threshold;
-    }
+
     public override Response Signal()
     {
-        return m_agent.Bullets <= ammoThreshold ? Response.Success : Response.Failure;
+        return m_agent.Bullets <= threshold ? Response.Success : Response.Failure;
     }
 }
 public class N_HasPath : N_Condition
