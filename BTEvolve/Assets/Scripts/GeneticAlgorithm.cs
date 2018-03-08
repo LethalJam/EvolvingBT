@@ -64,7 +64,9 @@ public class GeneticAlgorithm : MonoBehaviour {
     protected MatchSimulator m_simulator;
     protected List<Genome> m_population = new List<Genome>();
     protected List<Genome> m_childPop = new List<Genome>();
+    protected Genome bestGenome;
     protected bool simulating = false;
+    protected bool simulationDone = false;
 
     #region Initialization (Awake/Start)
     // Make sure that common GA functions are at lowest protected, not private.
@@ -82,7 +84,7 @@ public class GeneticAlgorithm : MonoBehaviour {
     protected void Start()
     {
         if (evolveOnStart)
-            Evolve();
+            StartCoroutine(Evolve());
     }
     #endregion
 
@@ -195,10 +197,21 @@ public class GeneticAlgorithm : MonoBehaviour {
         return randomComp;
     }
 
-    protected void Simulate()
+    protected IEnumerator Simulate()
     {
-        // Against best
+        // Simulate the genomes against the current best ones.
+        foreach (Genome g in m_population)
+        {
+            m_simulator.SetAgentBTs(g.RootNode, bestGenome.RootNode);
+            m_simulator.StartMatch();
+            simulating = true;
 
+            yield return new WaitUntil(() => !simulating);
+            
+        }
+        simulationDone = true;
+
+        yield return null;
     }
 
     protected void Select(out N_Root parent0, out N_Root parent1)
@@ -220,19 +233,23 @@ public class GeneticAlgorithm : MonoBehaviour {
     }
 
     // Function for starting the actual evolutionary progress.
-    public virtual void  Evolve()
+    public virtual IEnumerator Evolve()
     {
         // Start by randomly generating the initial population.
         for (int i = 0; i < populationSize; i++)
         {
             m_population.Add(new Genome(RandomBT()));
         }
+        // Randomly generate the first best genome
+        bestGenome = new Genome(RandomBT());
 
         // Run algorithm for the given amount of generations.
         for (int i = 0; i < generations; i++)
         {
-            // Start off by simulating all genomes.
-            Simulate();
+            // Start simulation and wait until done.
+            simulationDone = false;
+            StartCoroutine(Simulate());
+            yield return new WaitUntil(() => simulationDone);
 
             // Add genomes to childpop until it's the same size as previous.
             while (m_childPop.Count < m_population.Count)
@@ -257,5 +274,6 @@ public class GeneticAlgorithm : MonoBehaviour {
             m_childPop.Clear();
         }
 
+        yield return null;
     }
 }

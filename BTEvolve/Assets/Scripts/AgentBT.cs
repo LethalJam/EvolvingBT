@@ -31,9 +31,13 @@ public class AgentBT : MonoBehaviour {
         // Set the tree before being able to copy
         SetTree(testTree);
 
-        testTree = GetCopy();
+        N_Root treeCopy = GetCopy();
 
-        SetTree(testTree);
+        select.RemoveChild(seq);
+
+        SetTree(treeCopy);
+
+
     }
 
     // Simple function for setting the tree of the agent.
