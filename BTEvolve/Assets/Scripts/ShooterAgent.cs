@@ -66,6 +66,10 @@ public class ShooterAgent : MonoBehaviour {
         m_reloading = false;
         m_tookDamage = false;
         m_enemyLost = true;
+        Rigidbody body = GetComponent<Rigidbody>();
+        body.velocity = body.angularVelocity = Vector3.zero;
+        // Sätt sedan temporära träd i evoAlg
+        // Kolla sedan över om unityrandom behöver seedas
     }
     
     // Trigger related functions
@@ -178,7 +182,6 @@ public class ShooterAgent : MonoBehaviour {
         {
             m_bulletTimer = 0.0f;
             --m_bulletAmount;
-            Debug.Log(m_bulletAmount);
             // Instantiate new bullet
             GameObject newBullet = GameObject.Instantiate(m_bulletPrefab);
             newBullet.transform.SetPositionAndRotation(transform.position, Quaternion.LookRotation(targetDir, Vector3.up));
@@ -371,7 +374,7 @@ public class ShooterAgent : MonoBehaviour {
         if (m_health <= 0 && m_myState != AgentState.dead
             && m_simulator.MatchInProgress)
         {
-            Debug.Log(transform.gameObject.name + " died! " + Time.time);
+            Debug.Log(transform.gameObject.name + " died! ");
             m_myState = AgentState.dead;
             m_simulator.EndMatch();
             if (destroyOnDeath)

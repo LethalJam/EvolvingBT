@@ -16,26 +16,26 @@ public class AgentBT : MonoBehaviour {
             Debug.Log("AgentBT not attached to agent GameObject.");
 
 
-        // Temporary code for testing out a simple BT
-        N_Root testTree = new N_Root();
-        N_Selection select = new N_Selection();        
+        //// Temporary code for testing out a simple BT
+        //N_Root testTree = new N_Root();
+        //N_Selection select = new N_Selection();        
 
-        N_Sequence seq = new N_Sequence();
-        seq.AddLast(BehaviourSubtrees.Tree_PatrolOrKite(m_agent));
-        seq.AddFirst(BehaviourSubtrees.Tree_ShootAtEnemy(m_agent));
-        select.AddLast(BehaviourSubtrees.Tree_ReloadIfLow(m_agent, 5));
-        select.AddLast(seq);
+        //N_Sequence seq = new N_Sequence();
+        //seq.AddLast(BehaviourSubtrees.Tree_PatrolOrKite(m_agent));
+        //seq.AddFirst(BehaviourSubtrees.Tree_ShootAtEnemy(m_agent));
+        //select.AddLast(BehaviourSubtrees.Tree_ReloadIfLow(m_agent, 5));
+        //select.AddLast(seq);
 
-        testTree.Child = select;
+        //testTree.Child = select;
 
-        // Set the tree before being able to copy
-        SetTree(testTree);
+        //// Set the tree before being able to copy
+        //SetTree(testTree);
 
-        N_Root treeCopy = GetCopy();
+        //N_Root treeCopy = GetCopy();
 
-        select.RemoveChild(seq);
+        //select.RemoveChild(seq);
 
-        SetTree(treeCopy);
+        //SetTree(treeCopy);
 
 
     }

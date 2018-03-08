@@ -213,7 +213,7 @@ public class N_Kite : N_AgentNode
 
     public override Response Signal()
     {
-        Debug.Log("Kiting!");
+        //Debug.Log("Kiting!");
         return m_agent.Kite() == true ? Response.Success : Response.Running;
     }
 }

@@ -19,6 +19,7 @@ public class GeneticAlgorithm : MonoBehaviour {
         // Damage taken and given are the latest updated values given from evaluation.
         // These are then taken into consideration when selecting genomes.
         int damageTaken = 0, damageGiven = 0;
+        bool wonLastMatch = false;
 
         // Initialize variables.
         public Genome()
@@ -40,6 +41,7 @@ public class GeneticAlgorithm : MonoBehaviour {
         public List<Node> Conditions { get { return conditions;  } set { conditions = value; } }
         public int DamageTaken { get { return damageTaken;  } set { damageTaken = value; } }
         public int DamageGiven { get { return damageGiven; } set { damageGiven = value; } }
+        public bool WonLastMatch { get { return wonLastMatch; } set { wonLastMatch = value; } }
     }
     #endregion
 
@@ -91,7 +93,7 @@ public class GeneticAlgorithm : MonoBehaviour {
     protected void MatchSessionOver(object sender, EventArgs args)
     {
         simulating = false;
-        Debug.Log("Match over! " + Time.time);
+        Debug.Log("Match over!");
     }
     
     // Randomize a new BT using given defined subtrees and definitions.
@@ -202,12 +204,19 @@ public class GeneticAlgorithm : MonoBehaviour {
         // Simulate the genomes against the current best ones.
         foreach (Genome g in m_population)
         {
+            // Set the agent BTs and start match.
             m_simulator.SetAgentBTs(g.RootNode, bestGenome.RootNode);
             m_simulator.StartMatch();
             simulating = true;
-
+            // Yield until simulation of match is over.
             yield return new WaitUntil(() => !simulating);
-            
+
+            AgentResults results = m_simulator.Agent0Results;
+            // Save results in actual genome structure for later evaluation.
+            g.DamageGiven = results.damageGiven;
+            g.DamageTaken = results.damageTaken;
+            g.WonLastMatch = results.winner;
+            Debug.Log("Setting results of match!");
         }
         simulationDone = true;
 
@@ -246,10 +255,12 @@ public class GeneticAlgorithm : MonoBehaviour {
         // Run algorithm for the given amount of generations.
         for (int i = 0; i < generations; i++)
         {
+            Debug.Log("Starting simulation step...");
             // Start simulation and wait until done.
             simulationDone = false;
             StartCoroutine(Simulate());
             yield return new WaitUntil(() => simulationDone);
+            Debug.Log("Simulation step complete!");
 
             // Add genomes to childpop until it's the same size as previous.
             while (m_childPop.Count < m_population.Count)

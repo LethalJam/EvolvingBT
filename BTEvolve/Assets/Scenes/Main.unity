@@ -781,9 +781,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agent0: {fileID: 991540964}
   agent1: {fileID: 513533698}
-  simulationTimeScale: 2
+  simulationTimeScale: 20
   liveSimulationScale: 1
-  startGameOnStartup: 1
+  startGameOnStartup: 0
   matchTime: 120
 --- !u!1 &513533698 stripped
 GameObject:
@@ -1988,10 +1988,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d29d4e8625e72bd47a9579a71d256751, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  evolveOnStart: 0
+  evolveOnStart: 1
   additionalCompChance: 0.3
   generations: 100
-  populationSize: 40
+  populationSize: 20
   genomeSubtrees: 6
   mutationRate: 0.05
 --- !u!4 &1996230616

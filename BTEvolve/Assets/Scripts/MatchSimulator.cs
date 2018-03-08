@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class AgentResults
 {
-    public float damageGiven = 0.0f, damageTaken = 0.0f;
+    public int damageGiven = 0, damageTaken = 0;
     public bool winner = false;
 }
 
@@ -81,7 +81,6 @@ public class MatchSimulator : MonoBehaviour {
         ResetAgents();
         Time.timeScale = simulationTimeScale;
         m_matchInProgress = true;
-        m_matchTimer = 0.0f;
     }
     // Reset the values for all agents.
     public void ResetAgents()
@@ -118,7 +117,7 @@ public class MatchSimulator : MonoBehaviour {
             if (m_matchTimer >= matchTime)
             {
                 if (m_matchTimer >= matchTime)
-                    Debug.Log("Timed out!");
+                    Debug.Log("Timed out at " + m_matchTimer + " sec.");
 
                 EndMatch();
             }
@@ -129,6 +128,7 @@ public class MatchSimulator : MonoBehaviour {
     {
         m_matchInProgress = false;
         Time.timeScale = 0.0f;
+        m_matchTimer = 0.0f;
         // Damage taken/given agent0
         result_agent0.damageTaken = behave_agent0.TotalDamageTaken;
         result_agent0.damageGiven = behave_agent1.TotalDamageTaken;
