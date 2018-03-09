@@ -36,6 +36,9 @@ public class MatchSimulator : MonoBehaviour {
     private bool m_matchInProgress = false;
     // Timer variables used for the match timing out when no agent is able to win.
     private float m_matchTimer = 0.0f;
+    // Hp relevant values
+    private List<Vector3> m_hpPositions = new List<Vector3>();
+    private GameObject m_hpPrefab;
 
     #region Handlers for various events
     protected virtual void OnMatchOver(EventArgs args)
@@ -48,8 +51,24 @@ public class MatchSimulator : MonoBehaviour {
     }
     #endregion
 
+    private GameObject[] GetHealthPacks ()
+    {
+        return GameObject.FindGameObjectsWithTag("healthPack");
+    }
+
     void Awake ()
     {
+        // Find prefab of healthPack for respawning purposes.
+        m_hpPrefab = Resources.Load("healthPack") as GameObject;
+        if (m_hpPrefab == null)
+            Debug.LogError("No healthPack prefab found in resources.");
+        // Save spawning positions of healthpacks
+        GameObject[] hpArray = GetHealthPacks();
+        foreach(GameObject hp in hpArray)
+        {
+            m_hpPositions.Add(hp.transform.position);
+        }
+
         liveSimulationScale = simulationTimeScale;
         if (agent0 != null || agent1 != null)
         {
@@ -78,9 +97,27 @@ public class MatchSimulator : MonoBehaviour {
     // Reset the parameters for the purpose of initiating a new match session.
     public void StartMatch()
     {
+        ResetHp();
         ResetAgents();
         Time.timeScale = simulationTimeScale;
         m_matchInProgress = true;
+    }
+
+    // Reset the amounnt and positions of healthpacks
+    public void ResetHp()
+    {
+        // First, remove old healthPacks
+        GameObject[] healthPacks = GetHealthPacks();
+        foreach (GameObject hp in healthPacks)
+        {
+            Destroy(hp);
+        }
+        // Then, spawn new ones.
+        foreach (Vector3 hpVec in m_hpPositions)
+        {
+            GameObject newHp = Instantiate(m_hpPrefab);
+            newHp.transform.position = hpVec;
+        }
     }
     // Reset the values for all agents.
     public void ResetAgents()

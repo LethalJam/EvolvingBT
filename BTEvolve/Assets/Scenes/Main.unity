@@ -781,7 +781,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agent0: {fileID: 991540964}
   agent1: {fileID: 513533698}
-  simulationTimeScale: 20
+  simulationTimeScale: 4
   liveSimulationScale: 1
   startGameOnStartup: 0
   matchTime: 120

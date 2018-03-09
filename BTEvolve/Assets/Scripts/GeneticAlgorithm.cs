@@ -139,7 +139,7 @@ public class GeneticAlgorithm : MonoBehaviour {
 
     private Node RandomSubtree()
     {
-        int randomSubtreeIndex = UnityEngine.Random.Range(0, 6);
+        int randomSubtreeIndex = UnityEngine.Random.Range(0, 7);
         Node subtree;
         int randomThreshold;
         switch (randomSubtreeIndex)
@@ -179,7 +179,7 @@ public class GeneticAlgorithm : MonoBehaviour {
     private N_CompositionNode RandomComp()
     {
         N_CompositionNode randomComp;
-        int randomComposition = UnityEngine.Random.Range(0, 2);
+        int randomComposition = UnityEngine.Random.Range(0, 3);
         switch (randomComposition)
         {
             case 0:
