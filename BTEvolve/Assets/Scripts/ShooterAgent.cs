@@ -57,6 +57,7 @@ public class ShooterAgent : MonoBehaviour {
     #region Misc initialization
     public void ResetValues()
     {
+        // Reset AI values.
         m_health = m_maxHealth;
         m_totalDamageTaken = 0;
         m_bulletAmount = m_bulletMax;
@@ -66,10 +67,9 @@ public class ShooterAgent : MonoBehaviour {
         m_reloading = false;
         m_tookDamage = false;
         m_enemyLost = true;
+        // Also reset physics of rigidbody.
         Rigidbody body = GetComponent<Rigidbody>();
         body.velocity = body.angularVelocity = Vector3.zero;
-        // Sätt sedan temporära träd i evoAlg
-        // Kolla sedan över om unityrandom behöver seedas
     }
     
     // Trigger related functions
@@ -346,6 +346,15 @@ public class ShooterAgent : MonoBehaviour {
     public bool AtEnemyPosition () { return Vector3.Distance(transform.position, m_targetEnemy) <= 0.5f ? true : false; }
     #endregion
 
+    public void SetNavpos(Vector3 position)
+    {
+        m_navAgent.Warp(position);
+    }
+    public void SetRot(Quaternion rotation)
+    {
+        transform.rotation = rotation;
+    }
+
     // Used for "button" update.
     private void Update()
     {
@@ -369,7 +378,6 @@ public class ShooterAgent : MonoBehaviour {
         //    SetRandomDestination();
         //    WalkTowards(m_walkingDestinaton);
         //}
-
 
         if (m_health <= 0 && m_myState != AgentState.dead
             && m_simulator.MatchInProgress)

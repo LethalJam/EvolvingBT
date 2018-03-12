@@ -122,10 +122,17 @@ public class MatchSimulator : MonoBehaviour {
     // Reset the values for all agents.
     public void ResetAgents()
     {
+        // Create new sheets of results for next match.
         result_agent0 = new AgentResults();
         result_agent1 = new AgentResults();
-        agent0.transform.SetPositionAndRotation(startPos_agent0, startRot_agent0);
-        agent1.transform.SetPositionAndRotation(startPos_agent1, startRot_agent1);
+
+        // Reset the position and rotation of agents.
+        behave_agent0.SetNavpos(startPos_agent0);
+        behave_agent0.SetRot(startRot_agent0);
+        behave_agent1.SetNavpos(startPos_agent1);
+        behave_agent1.SetRot(startRot_agent1);
+
+        // Reset values on behaviours of agents.
         behave_agent0.ResetValues();
         behave_agent1.ResetValues();
     }
