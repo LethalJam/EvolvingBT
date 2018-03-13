@@ -131,6 +131,21 @@ public abstract class N_CompositionNode : Node
     {
         children.Remove(node);
     }
+    public virtual void ReplaceChild(Node oldNode, Node newNode)
+    {
+        // Find the indexed position of the old node in the list.
+        int index = children.IndexOf(oldNode);
+
+        // If the old node exists in the list, replace that index with the new one instead.
+        if (index != -1)
+        {
+            children[index] = newNode;
+            newNode.Parent = this;
+            oldNode.Parent = null;
+        }
+        else
+            Debug.LogError("Replacing node not found in list of children.");
+    }
 
     public List<Node> GetChildren ()
     {

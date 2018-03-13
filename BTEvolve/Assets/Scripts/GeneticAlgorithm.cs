@@ -65,6 +65,8 @@ public class GeneticAlgorithm : MonoBehaviour {
     [Tooltip("Set the probability of a random mutation occuring.( 0 - 100%) ")]
     [Range(0.0f, 1.0f)]
     public float mutationRate = 0.05f;
+    [Range(0.0f, 1.0f)]
+    public float combinationRate = 0.5f;
 
     // Protected variables used by all genetic algorithms of this solution.
     protected MatchSimulator m_simulator;
@@ -73,9 +75,6 @@ public class GeneticAlgorithm : MonoBehaviour {
     protected Genome bestGenome;
     protected bool simulating = false;
     protected bool simulationDone = false;
-
-    // Results sheets used for evaluation.
-    AgentResults results0, results1;
 
     #region Initialization (Awake/Start)
     // Make sure that common GA functions are at lowest protected, not private.
@@ -105,10 +104,11 @@ public class GeneticAlgorithm : MonoBehaviour {
 
     #region BT generation
     // Randomize a new BT using given defined subtrees and definitions.
-    protected N_Root RandomBT()
+    protected Genome RandomGenome()
     {
         N_Root root = new N_Root();
-
+        Genome randomGenome = new Genome();
+        
         // First, randomize starting composition.
         N_CompositionNode firstComp = RandomComp();
         
@@ -136,13 +136,17 @@ public class GeneticAlgorithm : MonoBehaviour {
                 currentComp = firstComp;
             }
 
-            // Lastly, add a random subtree to the current composition.
-             currentComp.AddLast(RandomSubtree());
+            // Lastly, add a random subtree to the current composition as
+            // well as to the list of subtree roots.
+            Node subTree = RandomSubtree();
+            randomGenome.SubRoots.Add(subTree);
+            currentComp.AddLast(subTree);
         }
 
         root.Child = firstComp;
+        randomGenome.RootNode = root;
 
-        return root;
+        return randomGenome;
     }
 
     private Node RandomSubtree()
@@ -247,7 +251,7 @@ public class GeneticAlgorithm : MonoBehaviour {
         }
     }
 
-    protected void RouletteSelect(out N_Root parent0, out N_Root parent1)
+    protected void RouletteSelect(out Genome parent0, out Genome parent1)
     {
         Dictionary<Genome, float> genomeToWeight = new Dictionary<Genome, float>();
 
@@ -296,14 +300,14 @@ public class GeneticAlgorithm : MonoBehaviour {
             switch (i)
             {
                 case 0:
-                    parent0 = TreeOperations.GetCopy(selectedTree, null);
+                    parent0 = new Genome(TreeOperations.GetCopy(selectedTree, null));
                     break;
                 case 1:
-                    parent1 = TreeOperations.GetCopy(selectedTree, null);
+                    parent1 = new Genome(TreeOperations.GetCopy(selectedTree, null));
                     break;
                 default:
-                    parent0 = new N_Root();
-                    parent1 = new N_Root();
+                    parent0 = new Genome();
+                    parent1 = new Genome();
                     Debug.LogError("No parent was set in roulette");
                     break;
             }
@@ -316,9 +320,52 @@ public class GeneticAlgorithm : MonoBehaviour {
         }
     }
 
-    protected void Combine (out N_Root child0, out N_Root child1, N_Root parent0, N_Root parent1)
+    // Parents are copies of trees in the population.
+    protected void Combine (out Genome child0, out Genome child1, Genome parent0, Genome parent1)
     {
-        // Temporary
+        Node subtree0, subtree1 = null;
+
+        // First, check if there'll be any combination/crossover.
+        float random = UnityEngine.Random.Range(0.0f, 1.0f);
+        if (random > combinationRate)
+        {
+            // Fetch to random subtrees from the parents.
+            int randomIndex = UnityEngine.Random.Range(0, parent0.SubRoots.Count);
+            subtree0 = parent0.SubRoots.ElementAt(randomIndex);
+            randomIndex = UnityEngine.Random.Range(0, parent1.SubRoots.Count);
+            subtree1 = parent1.SubRoots.ElementAt(randomIndex);
+
+            // Swap subtrees between 0 and 1.
+            if (subtree0.Parent.GetType().IsSubclassOf(typeof(N_CompositionNode)))
+            {
+                N_CompositionNode compRoot = subtree0.Parent as N_CompositionNode;
+                compRoot.ReplaceChild(subtree0, subtree1);
+            }
+            else if (subtree0.Parent.GetType().IsSubclassOf(typeof(N_Decorator)))
+            {
+                N_Decorator decRoot = subtree0.Parent as N_Decorator;
+                decRoot.Child = subtree1;
+                subtree1.Parent = decRoot;
+                subtree0.Parent = null;
+            }
+
+            // Swap subtrees between 1 and 0.
+            if (subtree1.Parent.GetType().IsSubclassOf(typeof(N_CompositionNode)))
+            {
+                N_CompositionNode compRoot = subtree1.Parent as N_CompositionNode;
+                compRoot.ReplaceChild(subtree1, subtree0);
+            }
+            else if (subtree1.Parent.GetType().IsSubclassOf(typeof(N_Decorator)))
+            {
+                N_Decorator decRoot = subtree1.Parent as N_Decorator;
+                decRoot.Child = subtree0;
+                subtree0.Parent = decRoot;
+                subtree1.Parent = null;
+            }
+
+        }
+        
+        // Regardless of combination, assign the children to be the parents. (combined or not)
         child0 = parent0;
         child1 = parent1;
     }
@@ -339,10 +386,10 @@ public class GeneticAlgorithm : MonoBehaviour {
         // Start by randomly generating the initial population.
         for (int i = 0; i < populationSize; i++)
         {
-            m_population.Add(new Genome(RandomBT()));
+            m_population.Add(RandomGenome());
         }
         // Randomly generate the first best genome
-        bestGenome = new Genome(RandomBT());
+        bestGenome = RandomGenome();
 
         // Run algorithm for the given amount of generations.
         for (int i = 0; i < generations; i++)
@@ -360,19 +407,19 @@ public class GeneticAlgorithm : MonoBehaviour {
             // Add genomes to childpop until it's the same size as previous.
             while (m_childPop.Count < m_population.Count)
             {
-                N_Root parent0, parent1;
+                Genome parent0, parent1;
                 // Select genomes given the results of simulation.
                 RouletteSelect(out parent0, out parent1); // Implicit evaluation
 
-                N_Root child0, child1;
+                Genome child0, child1;
                 // Combine parents to retrieve two children.
                 Combine(out child0, out child1, parent0, parent1);
 
                 // Finally, randomly mutate children and then add them to population.
-                Mutate(child0);
-                Mutate(child1);
-                m_childPop.Add(new Genome(child0));
-                m_childPop.Add(new Genome(child1));
+                Mutate(child0.RootNode);
+                Mutate(child1.RootNode);
+                m_childPop.Add(child0);
+                m_childPop.Add(child1);
             }
 
             // Set the previous population to the current childPop.

@@ -1991,9 +1991,10 @@ MonoBehaviour:
   evolveOnStart: 1
   additionalCompChance: 0.3
   generations: 100
-  populationSize: 40
+  populationSize: 4
   genomeSubtrees: 6
   mutationRate: 0.05
+  combinationRate: 0.5
 --- !u!4 &1996230616
 Transform:
   m_ObjectHideFlags: 0
