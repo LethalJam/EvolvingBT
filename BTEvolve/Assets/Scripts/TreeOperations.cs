@@ -42,11 +42,13 @@ public static class TreeOperations {
     }
 
     // Deep copy tree and return new one.
-    public static N_Root GetCopy(N_Root btRoot, ShooterAgent agent)
+    public static N_Root GetCopy(N_Root btRoot, ShooterAgent agent, List<Node> oldSubtrees, out List<Node> subtreeCopies)
     {
         // Creat initial required variables.
         N_Root copyRoot = new N_Root();
         Queue<Node> nodeCopies = new Queue<Node>();
+        // Use this list so save the copies of subtree roots that match the input list.
+        subtreeCopies = new List<Node>();
 
         // Start by copying initial composition.
         if (btRoot.Child.GetType() == typeof(N_ProbabilitySelector))
@@ -95,6 +97,11 @@ public static class TreeOperations {
         {
             // Get current node by dequeueing.
             Node current = nodeCopies.Dequeue();
+
+            // Check if the current node matches one in the subtree list.
+            // If so mark this iteration to save the node in the new list of subtree copies
+            bool isSubtree = oldSubtrees.Contains(current);
+
             Node parentNode = current.Parent;
             // Create new instance of node.
             Type copyType = current.GetType();
@@ -189,6 +196,10 @@ public static class TreeOperations {
 
                 newT.SetThreshold(currentT.Threshold);
             }
+            // If the current node matched one in the old list of subtrees, add the new one.
+            if (isSubtree)
+                subtreeCopies.Add(newNode);
+
         }
 
         return copyRoot;

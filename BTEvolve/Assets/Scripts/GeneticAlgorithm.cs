@@ -37,6 +37,18 @@ public class GeneticAlgorithm : MonoBehaviour {
             conditions = TreeOperations.RetrieveNodesOfType(rootNode, typeof(N_Condition));
         }
 
+        // Copy non-node values and return genome copy.
+        public Genome GenomeCopy()
+        {
+            Genome copy = new Genome();
+            copy.damageGiven = damageGiven;
+            copy.damageTaken = damageTaken;
+            copy.fitness = fitness;
+            copy.wonLastMatch = wonLastMatch;
+
+            return copy;
+        }
+
         // Set and get functions for various values.
         public N_Root RootNode { get { return rootNode; } set { rootNode = value; } }
         public List<Node> SubRoots { get { return subRoots; } set { subRoots = value; } }
@@ -248,6 +260,11 @@ public class GeneticAlgorithm : MonoBehaviour {
             // Make the floor of all fitness values 0 to make the roulette selection valid.
             if (g.Fitness < 0)
                 g.Fitness = 0;
+
+            // Find the genome with highest fitness, making sure that the simulations are always
+            // compared to the currently best genome.
+            if (g.Fitness > bestGenome.Fitness)
+                bestGenome = g;
         }
     }
 
@@ -275,35 +292,47 @@ public class GeneticAlgorithm : MonoBehaviour {
         for (int i = 0; i < 2; i++)
         {
             float random = UnityEngine.Random.Range(0.0f, 1.0f);
-            N_Root selectedTree = null;
+            Genome selectedTree = null;
             for (int j = 0; j < genomeToWeight.Count; j++)
             {
                 var current = genomeToWeight.ElementAt(j);
                 if (j == 0)
                 {
                     if (random < current.Value)
-                        selectedTree = current.Key.RootNode;
+                        selectedTree = current.Key;
                 }
                 else
                 {
                     var prev = genomeToWeight.ElementAt(j - 1);
                     if (random < current.Value && random > prev.Value)
                     {
-                        selectedTree = current.Key.RootNode;
+                        selectedTree = current.Key;
                     }
                 }
             }
             if (selectedTree == null)
                 Debug.LogError("Selected tree is null...");
 
+            Genome parentG = selectedTree.GenomeCopy();
+
             // Assign parents during different iterations.
-            switch (i)
+            switch (i) // Make sure to also copy conditions and subroots 
             {
                 case 0:
-                    parent0 = new Genome(TreeOperations.GetCopy(selectedTree, null));
+                    parent0 = parentG;
+                    List<Node> newSubroots0 = new List<Node>();
+                    parent0.RootNode = TreeOperations.GetCopy(selectedTree.RootNode, null, 
+                        selectedTree.SubRoots, out newSubroots0);
+                    parent0.SubRoots = newSubroots0;
+                    parent0.Conditions = TreeOperations.RetrieveNodesOfType(parent0.RootNode, typeof(N_Condition));
                     break;
                 case 1:
-                    parent1 = new Genome(TreeOperations.GetCopy(selectedTree, null));
+                    parent1 = parentG;
+                    List<Node> newSubroots1 = new List<Node>();
+                    parent1.RootNode = TreeOperations.GetCopy(selectedTree.RootNode, null,
+                        selectedTree.SubRoots, out newSubroots1);
+                    parent1.SubRoots = newSubroots1;
+                    parent1.Conditions = TreeOperations.RetrieveNodesOfType(parent1.RootNode, typeof(N_Condition));
                     break;
                 default:
                     parent0 = new Genome();
@@ -323,6 +352,7 @@ public class GeneticAlgorithm : MonoBehaviour {
     // Parents are copies of trees in the population.
     protected void Combine (out Genome child0, out Genome child1, Genome parent0, Genome parent1)
     {
+        Debug.Log("Combining!!");
         Node subtree0, subtree1 = null;
 
         // First, check if there'll be any combination/crossover.
@@ -332,6 +362,7 @@ public class GeneticAlgorithm : MonoBehaviour {
             // Fetch to random subtrees from the parents.
             int randomIndex = UnityEngine.Random.Range(0, parent0.SubRoots.Count);
             subtree0 = parent0.SubRoots.ElementAt(randomIndex);
+
             randomIndex = UnityEngine.Random.Range(0, parent1.SubRoots.Count);
             subtree1 = parent1.SubRoots.ElementAt(randomIndex);
 
@@ -346,7 +377,9 @@ public class GeneticAlgorithm : MonoBehaviour {
                 N_Decorator decRoot = subtree0.Parent as N_Decorator;
                 decRoot.Child = subtree1;
                 subtree1.Parent = decRoot;
-                subtree0.Parent = null;
+                // If subtree0s parent is still set to old one, set it to null instead.
+                if (subtree0.Parent == decRoot)
+                    subtree0.Parent = null;
             }
 
             // Swap subtrees between 1 and 0.
@@ -360,7 +393,9 @@ public class GeneticAlgorithm : MonoBehaviour {
                 N_Decorator decRoot = subtree1.Parent as N_Decorator;
                 decRoot.Child = subtree0;
                 subtree0.Parent = decRoot;
-                subtree1.Parent = null;
+                // If subtree1s parent is still set to old one, set it to null instead.
+                if (subtree1.Parent == decRoot)
+                    subtree1.Parent = null;
             }
 
         }
@@ -375,6 +410,16 @@ public class GeneticAlgorithm : MonoBehaviour {
         float random = UnityEngine.Random.Range(0.0f, 1.0f);
         if (random >  mutationRate)
         {
+            // Randomise between whether to change thresholds or add new nodes.
+            random = UnityEngine.Random.Range(0.0f, 1.0f);
+            if (random > 0.5f) // Change threshold
+            {
+
+            }
+            else // Add new node
+            {
+
+            }
 
         }
 
@@ -409,7 +454,7 @@ public class GeneticAlgorithm : MonoBehaviour {
             {
                 Genome parent0, parent1;
                 // Select genomes given the results of simulation.
-                RouletteSelect(out parent0, out parent1); // Implicit evaluation
+                RouletteSelect(out parent0, out parent1);
 
                 Genome child0, child1;
                 // Combine parents to retrieve two children.

@@ -141,7 +141,9 @@ public abstract class N_CompositionNode : Node
         {
             children[index] = newNode;
             newNode.Parent = this;
-            oldNode.Parent = null;
+            // If the oldnode parent is set to this comp, set it to null instead.
+            if (oldNode.Parent == this)
+                oldNode.Parent = null;
         }
         else
             Debug.LogError("Replacing node not found in list of children.");
