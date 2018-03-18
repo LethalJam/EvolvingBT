@@ -203,6 +203,15 @@ public class N_ProbabilitySelector : N_CompositionNode
     private Node m_chosenNode;
     private bool m_isNodeChosen = false;
 
+    public override void ReplaceChild(Node oldNode, Node newNode)
+    {
+        base.ReplaceChild(oldNode, newNode);
+        // Remove old and add new while transfering probability weight.
+        float oldProb = GetProbabilityWeight(oldNode);
+        probabilityMapping.Remove(oldNode);
+        probabilityMapping.Add(newNode, oldProb);
+    }
+
     // Modify add and remove to also map a probability value to each childNode.
     // If no probability weight is given, assume one.
     public override void AddFirst(Node node)

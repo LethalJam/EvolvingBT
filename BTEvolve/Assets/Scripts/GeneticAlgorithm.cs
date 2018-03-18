@@ -252,7 +252,10 @@ public class GeneticAlgorithm : MonoBehaviour {
         // Assign fitness value for each genome based on its statistics.
         foreach (Genome g in m_population)
         {
-            if (g.WonLastMatch)
+            g.Fitness = 100;
+            // If the genome won the match and it wasn't a draw (assuming 0 damage given is a draw)
+            // set fitness to 150.
+            if (g.WonLastMatch && g.DamageGiven > 0)
                 g.Fitness += 150;
             g.Fitness -= g.DamageTaken;
             g.Fitness += g.DamageGiven;
