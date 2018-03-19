@@ -9,7 +9,7 @@ public static class BehaviourSubtrees {
 
     // Returns success if health is above threshold or if no hp was found.
     // Returns running if in progress of going to hp.
-    public static Node Tree_GetHealthpackIfLow (ShooterAgent agent, int threshold)
+    public static Node Tree_GetHealthpackIfLow (N_AgentNode.AgentType agent, int threshold)
     {
         N_Selection hpTree = new N_Selection();
         N_DecFlip flipHealthCheck = new N_DecFlip(new N_HealthThreshold(agent, threshold));
@@ -24,7 +24,7 @@ public static class BehaviourSubtrees {
     // Returns success if ammo full. 
     // Returns failure if not beneath threshold.
     // Returns running if in process of reloading.
-    public static Node Tree_ReloadIfLow(ShooterAgent agent, int threshold)
+    public static Node Tree_ReloadIfLow(N_AgentNode.AgentType agent, int threshold)
     {
         // Create nodes.
         N_AmmoThreshold ammoCheck = new N_AmmoThreshold(agent, threshold);
@@ -40,7 +40,7 @@ public static class BehaviourSubtrees {
 
     // Returns success if no enemy is in sights *** succ or fail?
     // Returns success if in sights and agent shot.
-    public static Node Tree_ShootAtEnemy (ShooterAgent agent)
+    public static Node Tree_ShootAtEnemy (N_AgentNode.AgentType agent)
     {
         N_Sequence shootTree = new N_Sequence();
         shootTree.AddLast(new N_IsEnemyVisible(agent));
@@ -53,7 +53,7 @@ public static class BehaviourSubtrees {
 
     // Returns success if path was found and setting destination.
     // Returns running if in process of moving towards destination.
-    public static Node Tree_Patrol (ShooterAgent agent)
+    public static Node Tree_Patrol (N_AgentNode.AgentType agent)
     {
         //N_Sequence patrolSequence = new N_Sequence();
         //N_DecSuccess patrolSuccess = new N_DecSuccess(new N_Patrol(agent));
@@ -67,7 +67,7 @@ public static class BehaviourSubtrees {
     // or kiting. If no enemy, always patrol.
     // Returns success if path found and started.
     // Returns running if in process of walking towards destination.
-    public static Node Tree_PatrolOrKite (ShooterAgent agent)
+    public static Node Tree_PatrolOrKite (N_AgentNode.AgentType agent)
     {
         N_ProbabilitySelector kiteOrPatrol = new N_ProbabilitySelector();
         kiteOrPatrol.AddLast(new N_Kite(agent));
@@ -88,7 +88,7 @@ public static class BehaviourSubtrees {
 
     // Returns success if agent was shot, no enemy was in sight and agent turned around.
     // Returns failure otherwise.
-    public static Node Tree_TurnWhenShot (ShooterAgent agent)
+    public static Node Tree_TurnWhenShot (N_AgentNode.AgentType agent)
     {
         N_Sequence turnSequence = new N_Sequence();
         turnSequence.AddLast(new N_WasShot(agent));
@@ -101,7 +101,7 @@ public static class BehaviourSubtrees {
     // Returns failure if enemy in sights or if agent was lost.
     // Returns success if enemy was found.
     // Returns running if agent is walking towards last seen destination.
-    public static Node Tree_FollowEnemy (ShooterAgent agent)
+    public static Node Tree_FollowEnemy (N_AgentNode.AgentType agent)
     {
         N_Sequence followSequence = new N_Sequence();
         followSequence.AddLast(new N_DecFlip(new N_IsEnemyVisible(agent)));

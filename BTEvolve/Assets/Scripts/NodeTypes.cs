@@ -10,6 +10,7 @@ public enum Response
 { Success, Failure, Running}
 
 #region Basic nodes
+[Serializable]
 public abstract class Node : ICloneable
 {
     public object Clone()
@@ -24,6 +25,7 @@ public abstract class Node : ICloneable
     public abstract Response Signal();
 }
 // Rootnode has one child and no parents
+[Serializable]
 public class N_Root
 {
     private Node child;
@@ -37,6 +39,7 @@ public class N_Root
     }
 }
 // Nodes for testing purposes. Always return success and failure.
+[Serializable]
 public class N_Success : Node
 {
     public override Response Signal()
@@ -44,6 +47,7 @@ public class N_Success : Node
         return Response.Success;
     }
 }
+[Serializable]
 public class N_Failure : Node
 {
     public override Response Signal()
@@ -53,6 +57,7 @@ public class N_Failure : Node
 }
 #endregion
 #region Decorators
+[Serializable]
 public abstract class N_Decorator : Node
 {
     protected Node child;
@@ -67,6 +72,7 @@ public abstract class N_Decorator : Node
 
     public Node Child { get { return child; } set { child = value; } }
 }
+[Serializable]
 public class N_DecFlip : N_Decorator
 {   
     public N_DecFlip(Node child) : base(child) { }
@@ -88,6 +94,7 @@ public class N_DecFlip : N_Decorator
         return Response.Failure;
     }
 }
+[Serializable]
 public class N_DecSuccess : N_Decorator
 {
     public N_DecSuccess (Node child) : base(child) { }
@@ -100,6 +107,7 @@ public class N_DecSuccess : N_Decorator
 }
 #endregion
 #region Compositions
+[Serializable]
 public abstract class N_CompositionNode : Node
 {
     // Child nodes.
@@ -158,6 +166,7 @@ public abstract class N_CompositionNode : Node
         children = newChildren;
     }
 }
+[Serializable]
 public class N_Sequence : N_CompositionNode
 {
     public override Response Signal()
@@ -177,6 +186,7 @@ public class N_Sequence : N_CompositionNode
         return Response.Success;
     }
 }
+[Serializable]
 public class N_Selection : N_CompositionNode
 {
     public override Response Signal()
@@ -197,6 +207,7 @@ public class N_Selection : N_CompositionNode
         return Response.Failure;
     }
 }
+[Serializable]
 public class N_ProbabilitySelector : N_CompositionNode
 {
     Dictionary<Node, float> probabilityMapping = new Dictionary<Node, float>();

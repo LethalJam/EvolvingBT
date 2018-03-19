@@ -2,150 +2,190 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System;
 
 // Nodes are based on the ones defined in NodeTypes.cs
 
 // Agent nodes require access to the ShooterAgent-script
+[Serializable]
 public abstract class N_AgentNode : Node
 {
-    protected ShooterAgent m_agent;
-    protected N_AgentNode(ShooterAgent agent)
+    public enum AgentType
     {
-        m_agent = agent;
+        agent0, agent1
     }
-    public void SetAgent(ShooterAgent agent)
+    protected AgentType agentType;
+
+    protected N_AgentNode(AgentType type)
     {
-        m_agent = agent;
+        agentType = type;
+    }
+    public void SetAgent(AgentType type)
+    {
+        agentType = type;
     }
 }
 #region Condition nodes
 // Base class for identifying condition nodes.
+[Serializable]
 public abstract class N_Condition : N_AgentNode
 {
-    protected N_Condition (ShooterAgent agent) : base(agent) { }
+    protected N_Condition (AgentType agent) : base(agent) { }
 }
 
+[Serializable]
 public abstract class N_Threshold : N_Condition
 {
     protected int threshold;
+    // Min and max possible thresholds. Adjust depending on subclass in constructor!
+    protected int minthresh = 0, maxthresh = 0;
 
-    public N_Threshold(ShooterAgent agent, int threshold) : base(agent)
+    public N_Threshold(AgentType agent, int threshold) : base(agent)
     {
         SetThreshold(threshold);
     }
-    public void SetThreshold(int threshold)
+    public virtual void SetThreshold(int threshold)
     {
-        this.threshold = threshold;
+        // Check for min and max thresholds befire setting it.
+        if (threshold > maxthresh)
+            this.threshold = maxthresh;
+        else if (threshold < minthresh)
+            this.threshold = minthresh;
+        else
+            this.threshold = threshold;
     }
 
     public int Threshold { get { return threshold; } }
 }
 
 // Thresholds return Success if the value has reached the given threshold. Else, return failure.
+[Serializable]
 public class N_HealthThreshold : N_Threshold
 {
-    public N_HealthThreshold(ShooterAgent agent, int threshold) : base(agent, threshold)
+
+    public N_HealthThreshold(AgentType agent, int threshold) : base(agent, threshold)
     {
+        minthresh = 1;
+        maxthresh = 99;
     }
 
     public override Response Signal()
     {
-        return m_agent.Health <= threshold ? Response.Success : Response.Failure;
+        ShooterAgent agent = StaticMethods.GetInstance().GetAgentOfType(agentType);
+        return agent.Health <= threshold ? Response.Success : Response.Failure;
     }
 }
+[Serializable]
 public class N_AmmoThreshold : N_Threshold
 {
-    public N_AmmoThreshold(ShooterAgent agent, int threshold) : base(agent, threshold)
+    public N_AmmoThreshold(AgentType agent, int threshold) : base(agent, threshold)
     {
+        minthresh = 0;
+        maxthresh = 19;
     }
 
     public override Response Signal()
     {
-        return m_agent.Bullets <= threshold ? Response.Success : Response.Failure;
+        ShooterAgent agent = StaticMethods.GetInstance().GetAgentOfType(agentType);
+        return agent.Bullets <= threshold ? Response.Success : Response.Failure;
     }
 }
+[Serializable]
 public class N_HasPath : N_Condition
 {
-    public N_HasPath(ShooterAgent agent) : base(agent)
+    public N_HasPath(AgentType agent) : base(agent)
     { }
 
     public override Response Signal()
     {
-        return m_agent.HasPath() == true ? Response.Success : Response.Failure;
+        ShooterAgent agent = StaticMethods.GetInstance().GetAgentOfType(agentType);
+        return agent.HasPath() == true ? Response.Success : Response.Failure;
     }
 }
 // Check to see if agent was shot recently. If so, return success and reset "takendamage" boolean.
+[Serializable]
 public class N_WasShot : N_Condition
 {
-    public N_WasShot(ShooterAgent agent) : base(agent)
+    public N_WasShot(AgentType agent) : base(agent)
     {
     }
 
     public override Response Signal()
     {
-        return m_agent.HasTakenDamage() == true ? Response.Success : Response.Failure;
+        ShooterAgent agent = StaticMethods.GetInstance().GetAgentOfType(agentType);
+        return agent.HasTakenDamage() == true ? Response.Success : Response.Failure;
     }
 }
 #endregion
 
 #region ActionNodes
 // Look up to and start walking towards nearest healthpack
+[Serializable]
 public class N_GotoHealthpack : N_AgentNode
 {
-    public N_GotoHealthpack(ShooterAgent agent) : base(agent)
+    public N_GotoHealthpack(AgentType agent) : base(agent)
     { }
     // Return running if hp is found. If no hp exists, return success.
     public override Response Signal()
     {
-        return m_agent.GetHealthPack() == true ? Response.Running : Response.Failure;
+        ShooterAgent agent = StaticMethods.GetInstance().GetAgentOfType(agentType);
+        return agent.GetHealthPack() == true ? Response.Running : Response.Failure;
     }
 }
 // Check if there's an enemy in sight and save his current position.
+[Serializable]
 public class N_IsEnemyVisible : N_AgentNode
 {
-    public N_IsEnemyVisible(ShooterAgent agent) : base(agent)
+    public N_IsEnemyVisible(AgentType agent) : base(agent)
     { }
 
     public override Response Signal()
     {
-        return m_agent.EnemyVisible() == true ? Response.Success : Response.Failure;
+        ShooterAgent agent = StaticMethods.GetInstance().GetAgentOfType(agentType);
+        return agent.EnemyVisible() == true ? Response.Success : Response.Failure;
     }
 }
 // Shoot towards the enemy position (which might be the last seen position if the enemy is not visible). Always returns success.
+[Serializable]
 public class N_ShootAtEnemy : N_AgentNode
 {
-    public N_ShootAtEnemy(ShooterAgent agent) : base(agent)
+    public N_ShootAtEnemy(AgentType agent) : base(agent)
     { }
     public override Response Signal()
     {
-        m_agent.ShootAt(m_agent.EnemyPosition);
+        ShooterAgent agent = StaticMethods.GetInstance().GetAgentOfType(agentType);
+        agent.ShootAt(agent.EnemyPosition);
         return Response.Success;
     }
 }
 // Reload gun. Returns running if still reloading and Success if ammo is full.
+[Serializable]
 public class N_Reload : N_AgentNode
 {
-    public N_Reload(ShooterAgent agent) : base(agent)
+    public N_Reload(AgentType agent) : base(agent)
     { }
     public override Response Signal()
     {
-        return m_agent.Reload() == true ? Response.Running : Response.Success;
+        ShooterAgent agent = StaticMethods.GetInstance().GetAgentOfType(agentType);
+        return agent.Reload() == true ? Response.Running : Response.Success;
     }
 }
 // Node that picks random points on the navmesh and patrols between them contionously.
+[Serializable]
 public class N_Patrol : N_AgentNode
 {
-    public N_Patrol(ShooterAgent agent) : base(agent)
+    public N_Patrol(AgentType agent) : base(agent)
     { }
     // Set random destination and walk towards it.
     public override Response Signal()
     {
+        ShooterAgent agent = StaticMethods.GetInstance().GetAgentOfType(agentType);
         // If no current path, randomize new one and walk towards it.
-        if (!m_agent.HasPath() || m_agent.StateOfAgent == ShooterAgent.AgentState.kiting)
+        if (!agent.HasPath() || agent.StateOfAgent == ShooterAgent.AgentState.kiting)
         {
-            m_agent.StateOfAgent = ShooterAgent.AgentState.patroling;
-            m_agent.SetRandomDestination();
-            m_agent.WalkTowards(m_agent.WalkingDestination);
+            agent.StateOfAgent = ShooterAgent.AgentState.patroling;
+            agent.SetRandomDestination();
+            agent.WalkTowards(agent.WalkingDestination);
             return Response.Success;
         }
         else
@@ -153,52 +193,58 @@ public class N_Patrol : N_AgentNode
     }
 }
 // Cancels path towards current destination.
+[Serializable]
 public class N_CancelPath : N_AgentNode
 {
-    public N_CancelPath(ShooterAgent agent) : base(agent)
+    public N_CancelPath(AgentType agent) : base(agent)
     { }
     // Cancels current agent path and always returns success.
     public override Response Signal()
     {
-        m_agent.CancelPath();
+        ShooterAgent agent = StaticMethods.GetInstance().GetAgentOfType(agentType);
+        agent.CancelPath();
         return Response.Success;
     }
 }
 // Turns the agent 180 degrees.
+[Serializable]
 public class N_TurnAround : N_AgentNode
 {
-    public N_TurnAround(ShooterAgent agent) : base(agent)
+    public N_TurnAround(AgentType agent) : base(agent)
     {
     }
     public override Response Signal()
     {
-        m_agent.TurnAround();
+        ShooterAgent agent = StaticMethods.GetInstance().GetAgentOfType(agentType);
+        agent.TurnAround();
         return Response.Success;
     }
 }
 // Follow the enemy position if not lost.
+[Serializable]
 public class N_FollowEnemy : N_AgentNode
 {
-    public N_FollowEnemy(ShooterAgent agent) : base(agent)
+    public N_FollowEnemy(AgentType agent) : base(agent)
     { }
     public override Response Signal()
     {
+        ShooterAgent agent = StaticMethods.GetInstance().GetAgentOfType(agentType);
         // If not lost and has no path, walk towards enemy position.
-        if (!m_agent.EnemyLost && !m_agent.HasPath())
+        if (!agent.EnemyLost && !agent.HasPath())
         {
-            m_agent.CancelPath();
-            m_agent.WalkTowards(m_agent.EnemyPosition);
+            agent.CancelPath();
+            agent.WalkTowards(agent.EnemyPosition);
         }
         // If the agent reached the enemypos yet there's no enemy in sight, return failure.
-        else if (m_agent.AtEnemyPosition() && !m_agent.EnemyVisible())
+        else if (agent.AtEnemyPosition() && !agent.EnemyVisible())
         {
-            m_agent.EnemyLost = true;
+            agent.EnemyLost = true;
             return Response.Failure;
         }
         // When enemy is found, cancel following and return success.
-        else if (m_agent.EnemyVisible())
+        else if (agent.EnemyVisible())
         {
-            m_agent.CancelPath();
+            agent.CancelPath();
             return Response.Success;
         }
 
@@ -206,15 +252,17 @@ public class N_FollowEnemy : N_AgentNode
     }
 }
 // Kite away backwards relative to forward facing position.
+[Serializable]
 public class N_Kite : N_AgentNode
 {
-    public N_Kite(ShooterAgent agent) : base(agent)
+    public N_Kite(AgentType agent) : base(agent)
     { }
 
     public override Response Signal()
     {
+        ShooterAgent agent = StaticMethods.GetInstance().GetAgentOfType(agentType);
         //Debug.Log("Kiting!");
-        return m_agent.Kite() == true ? Response.Success : Response.Running;
+        return agent.Kite() == true ? Response.Success : Response.Running;
     }
 }
 #endregion

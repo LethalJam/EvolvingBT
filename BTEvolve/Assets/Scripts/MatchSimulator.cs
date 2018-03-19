@@ -140,8 +140,8 @@ public class MatchSimulator : MonoBehaviour {
     // Set the behaviour trees of the agents.
     public void SetAgentBTs (N_Root bt0, N_Root bt1)
     {
-        bt_agent0.SetTree(bt0);
-        bt_agent1.SetTree(bt1);
+        bt_agent0.SetTree(bt0, N_AgentNode.AgentType.agent0);
+        bt_agent1.SetTree(bt1, N_AgentNode.AgentType.agent1);
     }
 
 

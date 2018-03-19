@@ -15,8 +15,6 @@ public class GeneticAlgorithm : MonoBehaviour {
         // Subroots are the nodes that act as roots for the various subtrees within
         // the tree of the genome.
         List<Node> subRoots;
-        // Condition nodes are saved seperately for use in mutation.
-        List<Node> conditions;
         // Damage taken and given are the latest updated values given from evaluation.
         // These are then taken into consideration when selecting genomes.
         int damageTaken, damageGiven = 0;
@@ -33,8 +31,6 @@ public class GeneticAlgorithm : MonoBehaviour {
         {
             subRoots = new List<Node>();
             rootNode = root;
-            // Retrieve all condition nodes.
-            conditions = TreeOperations.RetrieveNodesOfType(rootNode, typeof(N_Condition));
         }
 
         // Copy non-node values and return genome copy.
@@ -52,7 +48,6 @@ public class GeneticAlgorithm : MonoBehaviour {
         // Set and get functions for various values.
         public N_Root RootNode { get { return rootNode; } set { rootNode = value; } }
         public List<Node> SubRoots { get { return subRoots; } set { subRoots = value; } }
-        public List<Node> Conditions { get { return conditions;  } set { conditions = value; } }
         public int Fitness { get { return fitness;  } set { fitness = value; } }
         public int DamageTaken { get { return damageTaken; } set { damageTaken = value; } }
         public int DamageGiven { get { return damageGiven; } set { damageGiven = value; } }
@@ -63,7 +58,7 @@ public class GeneticAlgorithm : MonoBehaviour {
 
     [Header("Start algorithm on startup of program?")]
     public bool evolveOnStart = false;
-    [Header("Adjust the chance for additional compositions being generated during randomization.")]
+    [Header("Adjust the chance for additional compositions being generated during randomization. [DEPRICATED]")]
     [Range(0.0f, 0.8f)]
     public float additionalCompChance = 0.3f;
     // Adjustable parameters.
@@ -77,8 +72,14 @@ public class GeneticAlgorithm : MonoBehaviour {
     [Tooltip("Set the probability of a random mutation occuring.( 0 - 100%) ")]
     [Range(0.0f, 1.0f)]
     public float mutationRate = 0.05f;
+    [Tooltip("Set the probability of a random mutation occuring.( 0 - 100%) ")]
     [Range(0.0f, 1.0f)]
     public float combinationRate = 0.5f;
+    [Tooltip("Set the range of possible mutation offsets for thresholds")]
+    [Range(-20, 0)]
+    public int minThresholdOffset = -10;
+    [Range(0, 20)]
+    public int maxTresholdOffset = 10;
 
     // Protected variables used by all genetic algorithms of this solution.
     protected MatchSimulator m_simulator;
@@ -125,28 +126,28 @@ public class GeneticAlgorithm : MonoBehaviour {
         N_CompositionNode firstComp = RandomComp();
         
         N_CompositionNode currentComp = firstComp;
-        bool nestled = false;
+        //bool nestled = false;
 
         // Generate random subtrees 
         for (int i = 0; i < genomeSubtrees; i++)
         {
             // Calculate random chance for adding a new composition as well
             // as ending it.
-            float randomChance = UnityEngine.Random.Range(0.0f, 1.0f);
-            if (randomChance < additionalCompChance && !nestled)
-            {
-                nestled = true;
-                N_CompositionNode subComp = RandomComp();
+            //float randomChance = UnityEngine.Random.Range(0.0f, 1.0f);
+            //if (randomChance < additionalCompChance && !nestled)
+            //{
+            //    nestled = true;
+            //    N_CompositionNode subComp = RandomComp();
 
-                // Attach new composition and add a subtree to it.
-                currentComp.AddLast(subComp);
-                currentComp = subComp;
-            }
-            else if (randomChance < (additionalCompChance+0.2f))
-            {
-                nestled = false;
-                currentComp = firstComp;
-            }
+            //    // Attach new composition and add a subtree to it.
+            //    currentComp.AddLast(subComp);
+            //    currentComp = subComp;
+            //}
+            //else if (randomChance < (additionalCompChance+0.2f))
+            //{
+            //    nestled = false;
+            //    currentComp = firstComp;
+            //}
 
             // Lastly, add a random subtree to the current composition as
             // well as to the list of subtree roots.
@@ -170,26 +171,26 @@ public class GeneticAlgorithm : MonoBehaviour {
         {
             case 0:
                 randomThreshold = UnityEngine.Random.Range(0, 100);
-                subtree = BehaviourSubtrees.Tree_GetHealthpackIfLow(null, randomThreshold);
+                subtree = BehaviourSubtrees.Tree_GetHealthpackIfLow(N_AgentNode.AgentType.agent0, randomThreshold);
                 break;
             case 1:
                 randomThreshold = UnityEngine.Random.Range(0, 15);
-                subtree = BehaviourSubtrees.Tree_ReloadIfLow(null, randomThreshold);
+                subtree = BehaviourSubtrees.Tree_ReloadIfLow(N_AgentNode.AgentType.agent0, randomThreshold);
                 break;
             case 2:
-                subtree = BehaviourSubtrees.Tree_ShootAtEnemy(null);
+                subtree = BehaviourSubtrees.Tree_ShootAtEnemy(N_AgentNode.AgentType.agent0);
                 break;
             case 3:
-                subtree = BehaviourSubtrees.Tree_Patrol(null);
+                subtree = BehaviourSubtrees.Tree_Patrol(N_AgentNode.AgentType.agent0);
                 break;
             case 4:
-                subtree = BehaviourSubtrees.Tree_PatrolOrKite(null);
+                subtree = BehaviourSubtrees.Tree_PatrolOrKite(N_AgentNode.AgentType.agent0);
                 break;
             case 5:
-                subtree = BehaviourSubtrees.Tree_TurnWhenShot(null);
+                subtree = BehaviourSubtrees.Tree_TurnWhenShot(N_AgentNode.AgentType.agent0);
                 break;
             case 6:
-                subtree = BehaviourSubtrees.Tree_FollowEnemy(null);
+                subtree = BehaviourSubtrees.Tree_FollowEnemy(N_AgentNode.AgentType.agent0);
                 break;
             default:
                 subtree = null;
@@ -224,6 +225,9 @@ public class GeneticAlgorithm : MonoBehaviour {
     }
     #endregion
 
+    #region Evolution
+
+    // Simulate genomes against the currently best one and save results of match
     protected IEnumerator Simulate()
     {
         // Simulate the genomes against the current best ones.
@@ -247,6 +251,7 @@ public class GeneticAlgorithm : MonoBehaviour {
         yield return null;
     }
 
+    // Assign fitness values according to their performance in the simulation step
     protected void Evaluate()
     {
         // Assign fitness value for each genome based on its statistics.
@@ -268,14 +273,14 @@ public class GeneticAlgorithm : MonoBehaviour {
             // compared to the currently best genome.
             if (g.Fitness > bestGenome.Fitness)
             {
-                List<Node> noroots = new List<Node>();
-                bestGenome.RootNode = TreeOperations.GetCopy(g.RootNode, null, g.SubRoots,  out noroots);
+                bestGenome.RootNode = StaticMethods.DeepCopy<N_Root>(g.RootNode);
                 bestGenome.Fitness = g.Fitness;
             }
 
         }
     }
 
+    // Select two candidates for next generation based on their fitness values
     protected void RouletteSelect(out Genome parent0, out Genome parent1)
     {
         Dictionary<Genome, float> genomeToWeight = new Dictionary<Genome, float>();
@@ -328,19 +333,19 @@ public class GeneticAlgorithm : MonoBehaviour {
             {
                 case 0:
                     parent0 = parentG;
-                    List<Node> newSubroots0 = new List<Node>();
-                    parent0.RootNode = TreeOperations.GetCopy(selectedTree.RootNode, null, 
-                        selectedTree.SubRoots, out newSubroots0);
-                    parent0.SubRoots = newSubroots0;
-                    parent0.Conditions = TreeOperations.RetrieveNodesOfType(parent0.RootNode, typeof(N_Condition));
+                    //List<Node> newSubroots0 = new List<Node>();
+                    //parent0.RootNode = TreeOperations.GetCopy(selectedTree.RootNode, null, 
+                    //    selectedTree.SubRoots, out newSubroots0);
+                    //parent0.SubRoots = newSubroots0;
+                    parent0.RootNode = StaticMethods.DeepCopy<N_Root>(selectedTree.RootNode);
                     break;
                 case 1:
                     parent1 = parentG;
-                    List<Node> newSubroots1 = new List<Node>();
-                    parent1.RootNode = TreeOperations.GetCopy(selectedTree.RootNode, null,
-                        selectedTree.SubRoots, out newSubroots1);
-                    parent1.SubRoots = newSubroots1;
-                    parent1.Conditions = TreeOperations.RetrieveNodesOfType(parent1.RootNode, typeof(N_Condition));
+                    //List<Node> newSubroots1 = new List<Node>();
+                    //parent1.RootNode = TreeOperations.GetCopy(selectedTree.RootNode, null,
+                    //    selectedTree.SubRoots, out newSubroots1);
+                    //parent1.SubRoots = newSubroots1;
+                    parent1.RootNode = StaticMethods.DeepCopy<N_Root>(selectedTree.RootNode);
                     break;
                 default:
                     parent0 = new Genome();
@@ -357,7 +362,7 @@ public class GeneticAlgorithm : MonoBehaviour {
         }
     }
 
-    // Parents are copies of trees in the population.
+    // Combine parents and create two new children based on them
     protected void Combine (out Genome child0, out Genome child1, Genome parent0, Genome parent1)
     {
         Debug.Log("Combining!!");
@@ -367,49 +372,29 @@ public class GeneticAlgorithm : MonoBehaviour {
         float random = UnityEngine.Random.Range(0.0f, 1.0f);
         if (random > combinationRate)
         {
-            // Fetch to random subtrees from the parents.
-            int randomIndex = UnityEngine.Random.Range(0, parent0.SubRoots.Count);
-            subtree0 = parent0.SubRoots.ElementAt(randomIndex);
+            // Get initial comp of parent 0
+            N_CompositionNode comp0 = parent0.RootNode.Child as N_CompositionNode;
+            // Fetch a random subtree from the parent's subtrees
+            int randomIndex = UnityEngine.Random.Range(0, comp0.GetChildren().Count);
+            subtree0 = comp0.GetChildren().ElementAt(randomIndex);
 
-            randomIndex = UnityEngine.Random.Range(0, parent1.SubRoots.Count);
-            subtree1 = parent1.SubRoots.ElementAt(randomIndex);
+            // Get initial comp of parent 1
+            N_CompositionNode comp1 = parent1.RootNode.Child as N_CompositionNode;
+            // Fetch a random subtree from the parent's subtrees
+            randomIndex = UnityEngine.Random.Range(0, comp1.GetChildren().Count);
+            subtree1 = comp1.GetChildren().ElementAt(randomIndex);
 
             // Swap subtrees between 0 and 1.
             if (subtree0.Parent.GetType().IsSubclassOf(typeof(N_CompositionNode)))
             {
-                N_CompositionNode compRoot = subtree0.Parent as N_CompositionNode;
-                compRoot.ReplaceChild(subtree0, subtree1);
+                comp0.ReplaceChild(subtree0, StaticMethods.DeepCopy<Node>(subtree1));
             }
-            else if (subtree0.Parent.GetType().IsSubclassOf(typeof(N_Decorator)))
-            {
-                N_Decorator decRoot = subtree0.Parent as N_Decorator;
-                decRoot.Child = subtree1;
-                subtree1.Parent = decRoot;
-                // If subtree0s parent is still set to old one, set it to null instead.
-                if (subtree0.Parent == decRoot)
-                    subtree0.Parent = null;
-            }
-            // Update subroots list.
-            parent0.SubRoots.Remove(subtree0);
-            parent0.SubRoots.Add(subtree1);
 
             // Swap subtrees between 1 and 0.
             if (subtree1.Parent.GetType().IsSubclassOf(typeof(N_CompositionNode)))
             {
-                N_CompositionNode compRoot = subtree1.Parent as N_CompositionNode;
-                compRoot.ReplaceChild(subtree1, subtree0);
+                comp1.ReplaceChild(subtree1, StaticMethods.DeepCopy<Node>(subtree0));
             }
-            else if (subtree1.Parent.GetType().IsSubclassOf(typeof(N_Decorator)))
-            {
-                N_Decorator decRoot = subtree1.Parent as N_Decorator;
-                decRoot.Child = subtree0;
-                subtree0.Parent = decRoot;
-                // If subtree1s parent is still set to old one, set it to null instead.
-                if (subtree1.Parent == decRoot)
-                    subtree1.Parent = null;
-            }
-            parent1.SubRoots.Remove(subtree1);
-            parent1.SubRoots.Add(subtree0);
 
         }
         
@@ -417,19 +402,32 @@ public class GeneticAlgorithm : MonoBehaviour {
         child0 = parent0;
         child1 = parent1;
     }
+
+    // Assign random mutations to the given tree.
     protected void Mutate (N_Root child)
     {
+        Debug.Log("Mutating!!");
         // First, check if there'll be any mutation at all.
         float random = UnityEngine.Random.Range(0.0f, 1.0f);
         if (random >  mutationRate)
         {
-            // Randomise between whether to change thresholds or add new nodes.
-            random = UnityEngine.Random.Range(0.0f, 1.0f);
-            if (random > 0.5f) // Change threshold
-            {
+            List<Node> thresholds = TreeOperations.RetrieveNodesOfType(child, typeof(N_Threshold));
+            List<Node> probNodes = TreeOperations.RetrieveNodesOfType(child, typeof(N_ProbabilitySelector));
 
+            // Randomise between whether to change thresholds or probabilities
+            random = UnityEngine.Random.Range(0.0f, 1.0f);
+            // If no probnode exists, change condition instead
+            if ((random > 0.5f && thresholds.Count > 0) 
+                || (probNodes.Count <= 0 && thresholds.Count > 0))
+            {
+                int index = UnityEngine.Random.Range(0, thresholds.Count);
+                N_Threshold thresh = thresholds.ElementAt(index) as N_Threshold;
+
+                // Mutate threshold by random offset
+                int offset = UnityEngine.Random.Range(minThresholdOffset, maxTresholdOffset);
+                thresh.SetThreshold(thresh.Threshold + offset);
             }
-            else // Add new node
+            else if (probNodes.Count > 0) // Adjust relative probabilities on a probability selector.
             {
 
             }
@@ -446,7 +444,7 @@ public class GeneticAlgorithm : MonoBehaviour {
         {
             m_population.Add(RandomGenome());
         }
-        // Randomly generate the first best genome
+        // Randomly generate the first best genome.
         bestGenome = RandomGenome();
         // Set the starting fitness of best to be the same as default fitness of 
         // population genomes.
@@ -472,8 +470,8 @@ public class GeneticAlgorithm : MonoBehaviour {
                 // Select genomes given the results of simulation.
                 RouletteSelect(out parent0, out parent1);
 
-                Genome child0, child1;
                 // Combine parents to retrieve two children.
+                Genome child0, child1;
                 Combine(out child0, out child1, parent0, parent1);
 
                 // Finally, randomly mutate children and then add them to population.
@@ -485,8 +483,13 @@ public class GeneticAlgorithm : MonoBehaviour {
 
             // Set the previous population to the current childPop.
             m_population = m_childPop;
+            // Reset childpop for next generaion.
+            m_childPop = new List<Genome>();
         }
 
         yield return null;
     }
+
+    #endregion
+
 }
