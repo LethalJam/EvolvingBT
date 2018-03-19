@@ -783,7 +783,7 @@ MonoBehaviour:
   agent1: {fileID: 513533698}
   simulationTimeScale: 40
   liveSimulationScale: 1
-  startGameOnStartup: 0
+  startGameOnStartup: 1
   matchTime: 120
 --- !u!1 &513533698 stripped
 GameObject:
@@ -1536,6 +1536,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   plane: {fileID: 1502088683}
+  agent0: {fileID: 991540964}
+  agent1: {fileID: 513533698}
 --- !u!4 &1508931227
 Transform:
   m_ObjectHideFlags: 0
@@ -1988,7 +1990,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d29d4e8625e72bd47a9579a71d256751, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  evolveOnStart: 1
+  evolveOnStart: 0
   additionalCompChance: 0.3
   generations: 100
   populationSize: 4
