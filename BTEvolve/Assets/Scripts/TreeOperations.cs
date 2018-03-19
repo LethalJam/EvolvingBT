@@ -122,6 +122,10 @@ public static class TreeOperations {
                 newNode = Activator.CreateInstance(copyType) as Node;
             }
 
+            // If the current node matched one in the old list of subtrees, add the new one.
+            if (isSubtree)
+                subtreeCopies.Add(newNode);
+
             // Update coupling to the parent.
             if (parentNode.GetType() == typeof(N_ProbabilitySelector))
             {
@@ -196,9 +200,6 @@ public static class TreeOperations {
 
                 newT.SetThreshold(currentT.Threshold);
             }
-            // If the current node matched one in the old list of subtrees, add the new one.
-            if (isSubtree)
-                subtreeCopies.Add(newNode);
 
         }
 

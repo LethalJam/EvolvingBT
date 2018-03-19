@@ -267,7 +267,12 @@ public class GeneticAlgorithm : MonoBehaviour {
             // Find the genome with highest fitness, making sure that the simulations are always
             // compared to the currently best genome.
             if (g.Fitness > bestGenome.Fitness)
-                bestGenome = g;
+            {
+                List<Node> noroots = new List<Node>();
+                bestGenome.RootNode = TreeOperations.GetCopy(g.RootNode, null, g.SubRoots,  out noroots);
+                bestGenome.Fitness = g.Fitness;
+            }
+
         }
     }
 
@@ -384,6 +389,9 @@ public class GeneticAlgorithm : MonoBehaviour {
                 if (subtree0.Parent == decRoot)
                     subtree0.Parent = null;
             }
+            // Update subroots list.
+            parent0.SubRoots.Remove(subtree0);
+            parent0.SubRoots.Add(subtree1);
 
             // Swap subtrees between 1 and 0.
             if (subtree1.Parent.GetType().IsSubclassOf(typeof(N_CompositionNode)))
@@ -400,6 +408,8 @@ public class GeneticAlgorithm : MonoBehaviour {
                 if (subtree1.Parent == decRoot)
                     subtree1.Parent = null;
             }
+            parent1.SubRoots.Remove(subtree1);
+            parent1.SubRoots.Add(subtree0);
 
         }
         
@@ -438,6 +448,9 @@ public class GeneticAlgorithm : MonoBehaviour {
         }
         // Randomly generate the first best genome
         bestGenome = RandomGenome();
+        // Set the starting fitness of best to be the same as default fitness of 
+        // population genomes.
+        bestGenome.Fitness = 100;
 
         // Run algorithm for the given amount of generations.
         for (int i = 0; i < generations; i++)
