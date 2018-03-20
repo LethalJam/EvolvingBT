@@ -782,7 +782,7 @@ MonoBehaviour:
   agent0: {fileID: 991540964}
   agent1: {fileID: 513533698}
   simulationTimeScale: 20
-  liveSimulationScale: 1
+  liveSimulationScale: 20
   startGameOnStartup: 0
   matchTime: 120
 --- !u!1 &513533698 stripped
@@ -1992,7 +1992,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   evolveOnStart: 1
   additionalCompChance: 0.3
-  generations: 100
+  generations: 2
   populationSize: 4
   genomeSubtrees: 6
   combinationRate: 0.5

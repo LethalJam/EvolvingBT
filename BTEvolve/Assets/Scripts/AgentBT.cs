@@ -15,35 +15,31 @@ public class AgentBT : MonoBehaviour {
         if (m_agent == null)
             Debug.Log("AgentBT not attached to agent GameObject.");
 
-        //N_AgentNode.AgentType agent;
+        N_AgentNode.AgentType agent;
 
-        //if (StaticMethods.GetInstance().GetAgent0() == this.GetComponent<ShooterAgent>())
-        //    agent = N_AgentNode.AgentType.agent0;
-        //else
-        //    agent = N_AgentNode.AgentType.agent1;
+        if (StaticMethods.GetInstance().GetAgent0() == this.GetComponent<ShooterAgent>())
+            agent = N_AgentNode.AgentType.agent0;
+        else
+            agent = N_AgentNode.AgentType.agent1;
 
 
-        //// Temporary code for testing out a simple BT
-        //N_Root testTree = new N_Root();
-        //N_Selection select = new N_Selection();
+        // Temporary code for testing out a simple BT
+        N_Root testTree = new N_Root();
+        N_Selection select = new N_Selection();
 
-        //N_Sequence seq = new N_Sequence();
-        //seq.AddLast(BehaviourSubtrees.Tree_PatrolOrKite(agent));
-        //seq.AddFirst(BehaviourSubtrees.Tree_ShootAtEnemy(agent));
-        //select.AddLast(BehaviourSubtrees.Tree_ReloadIfLow(agent, 5));
-        //select.AddLast(seq);
+        N_Sequence seq = new N_Sequence();
+        seq.AddLast(BehaviourSubtrees.Tree_PatrolOrKite(agent));
+        seq.AddFirst(BehaviourSubtrees.Tree_ShootAtEnemy(agent));
+        select.AddLast(BehaviourSubtrees.Tree_ReloadIfLow(agent, 5));
+        select.AddLast(seq);
 
-        //testTree.Child = select;
+        testTree.Child = select;
 
-        //// Set the tree before being able to copy
-        //SetTree(testTree, agent);
+        FileSaver.GetInstance().SaveTree(testTree, gameObject.name);
+        N_Root loadedTree = FileSaver.GetInstance().LoadTree(gameObject.name);
 
-        //N_Root treeCopy = StaticMethods.DeepCopy<N_Root>(testTree);
-
-        //select.RemoveChild(seq);
-
-        //SetTree(treeCopy, agent);
-
+        // Set the tree before being able to copy
+        SetTree(loadedTree, agent);
 
     }
 

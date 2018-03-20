@@ -468,8 +468,12 @@ public class GeneticAlgorithm : MonoBehaviour {
             else if (random > 0.66f || (probNodes.Count <= 0 && thresholds.Count <= 0)) // Change subtree
             {
                 Debug.Log("Changing subtree");
-                Node newTree = RandomSubtree();
+                N_CompositionNode rootComp = child.Child as N_CompositionNode;
 
+                // Get a random subtree index and replace its position in the tree with
+                // a new randomized subtree instead.
+                int randomSubtree = UnityEngine.Random.Range(0, rootComp.GetChildren().Count);
+                rootComp.ReplaceChild(rootComp.GetChildren()[randomSubtree], RandomSubtree());
             }
 
         }
@@ -526,6 +530,8 @@ public class GeneticAlgorithm : MonoBehaviour {
             // Reset childpop for next generaion.
             m_childPop = new List<Genome>();
         }
+        // Save the final best tree.
+        FileSaver.GetInstance().SaveTree(bestGenome.RootNode, "singleEvolved");
 
         yield return null;
     }
