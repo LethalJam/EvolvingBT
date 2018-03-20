@@ -265,6 +265,18 @@ public class N_ProbabilitySelector : N_CompositionNode
         else
             Debug.LogError("SetProbabilityWeight: Trying to access non-existent node.");
     }
+    public void OffsetProbabilityWeight(Node node, float offset)
+    {
+        if (probabilityMapping.ContainsKey(node))
+        {
+            probabilityMapping[node] += offset;
+            if (probabilityMapping[node] < 0)
+                probabilityMapping[node] = 0;
+        }
+        else
+            Debug.LogError("OffsetProbabilityWeight: Trying to acces no-existent node.");
+
+    }
     // Get the weight of the given node if there is one.
     public float GetProbabilityWeight(Node node)
     {

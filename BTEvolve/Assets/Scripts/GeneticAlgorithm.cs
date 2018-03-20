@@ -62,24 +62,34 @@ public class GeneticAlgorithm : MonoBehaviour {
     [Range(0.0f, 0.8f)]
     public float additionalCompChance = 0.3f;
     // Adjustable parameters.
-    [Header("Variables for adjusting the settings of the genetic algorithm.")]
+    [Header("General settings")]
     [Tooltip("Set amount of generations for the execution.")]
     public int generations = 10;
     [Tooltip("Set size of the population for each generation.")]
     public int populationSize = 40;
     [Tooltip("Set the amount of subtrees within the genome.")]
     public int genomeSubtrees = 6;
+
+    // Combination related
+    [Header("Combination")]
+    [Tooltip("Set the probability of a random combination occuring.( 0 - 100%) ")]
+    [Range(0.0f, 1.0f)]
+    public float combinationRate = 0.5f;
+
+    // Mutation related
+    [Header("Mutation")]
     [Tooltip("Set the probability of a random mutation occuring.( 0 - 100%) ")]
     [Range(0.0f, 1.0f)]
     public float mutationRate = 0.05f;
-    [Tooltip("Set the probability of a random mutation occuring.( 0 - 100%) ")]
-    [Range(0.0f, 1.0f)]
-    public float combinationRate = 0.5f;
     [Tooltip("Set the range of possible mutation offsets for thresholds")]
     [Range(-20, 0)]
     public int minThresholdOffset = -10;
     [Range(0, 20)]
     public int maxTresholdOffset = 10;
+    [Range(5.0f, 100.0f)]
+    [Tooltip("Increase or decrease probability based on a procentile offset relative to " +
+        "the total weight of probabilities. ( 5 - 100%) ")]
+    public float relativeProbabilityMutation = 5.0f;
 
     // Protected variables used by all genetic algorithms of this solution.
     protected MatchSimulator m_simulator;
@@ -365,24 +375,23 @@ public class GeneticAlgorithm : MonoBehaviour {
     // Combine parents and create two new children based on them
     protected void Combine (out Genome child0, out Genome child1, Genome parent0, Genome parent1)
     {
-        Debug.Log("Combining!!");
         Node subtree0, subtree1 = null;
-
         // First, check if there'll be any combination/crossover.
         float random = UnityEngine.Random.Range(0.0f, 1.0f);
-        if (random > combinationRate)
+        if (random < combinationRate)
         {
+            Debug.Log("Combining!!");
             // Get initial comp of parent 0
             N_CompositionNode comp0 = parent0.RootNode.Child as N_CompositionNode;
             // Fetch a random subtree from the parent's subtrees
             int randomIndex = UnityEngine.Random.Range(0, comp0.GetChildren().Count);
-            subtree0 = comp0.GetChildren().ElementAt(randomIndex);
+            subtree0 = comp0.GetChildren()[randomIndex];
 
             // Get initial comp of parent 1
             N_CompositionNode comp1 = parent1.RootNode.Child as N_CompositionNode;
             // Fetch a random subtree from the parent's subtrees
             randomIndex = UnityEngine.Random.Range(0, comp1.GetChildren().Count);
-            subtree1 = comp1.GetChildren().ElementAt(randomIndex);
+            subtree1 = comp1.GetChildren()[randomIndex];
 
             // Swap subtrees between 0 and 1.
             if (subtree0.Parent.GetType().IsSubclassOf(typeof(N_CompositionNode)))
@@ -406,29 +415,60 @@ public class GeneticAlgorithm : MonoBehaviour {
     // Assign random mutations to the given tree.
     protected void Mutate (N_Root child)
     {
-        Debug.Log("Mutating!!");
         // First, check if there'll be any mutation at all.
         float random = UnityEngine.Random.Range(0.0f, 1.0f);
-        if (random >  mutationRate)
+        if (random <  1.0f) // TEMPORARY CHANGE TO mutationRate AFTER TESTING
         {
+            Debug.Log("Mutating!!");
             List<Node> thresholds = TreeOperations.RetrieveNodesOfType(child, typeof(N_Threshold));
             List<Node> probNodes = TreeOperations.RetrieveNodesOfType(child, typeof(N_ProbabilitySelector));
 
             // Randomise between whether to change thresholds or probabilities
             random = UnityEngine.Random.Range(0.0f, 1.0f);
-            // If no probnode exists, change condition instead
-            if ((random > 0.5f && thresholds.Count > 0) 
-                || (probNodes.Count <= 0 && thresholds.Count > 0))
+            // If no probnode exists, change condition if there are any instead
+            if ((random <= 0.33f && thresholds.Count > 0) 
+                || (probNodes.Count <= 0 && random <= 0.66f && thresholds.Count > 0))
             {
+                Debug.Log("Changing condition");
+                // Get random index within range of list
                 int index = UnityEngine.Random.Range(0, thresholds.Count);
-                N_Threshold thresh = thresholds.ElementAt(index) as N_Threshold;
+                N_Threshold thresh = thresholds[index] as N_Threshold;
 
                 // Mutate threshold by random offset
                 int offset = UnityEngine.Random.Range(minThresholdOffset, maxTresholdOffset);
                 thresh.SetThreshold(thresh.Threshold + offset);
             }
-            else if (probNodes.Count > 0) // Adjust relative probabilities on a probability selector.
+            else if (random > 0.33f && random <= 0.66f && probNodes.Count > 0) // Adjust relative probabilities on a probability selector.
             {
+                Debug.Log("Changing probability");
+                // Get random index within range of list
+                int index = UnityEngine.Random.Range(0, probNodes.Count);
+                N_ProbabilitySelector probSelect = probNodes[index] as N_ProbabilitySelector;
+
+                // Check so that the probablitySelector has any children.
+                if (probSelect.GetChildren().Count <= 0)
+                    return;
+
+                // Calculate total probability and retrieve a relative offset based on it.
+                float totalProb = 0.0f;
+                foreach (Node n in probSelect.GetChildren())
+                {
+                    totalProb += probSelect.GetProbabilityWeight(n);
+                }
+                float offset = totalProb * (relativeProbabilityMutation / 100.0f);
+                // Also, get a random sign to decide whether to substract or add offset
+                // and a random index for which child to be changed.
+                float randomSign = Mathf.Sign(UnityEngine.Random.Range(-1.0f, 1.0f));
+                int randomChildIndex = UnityEngine.Random.Range(0, probSelect.GetChildren().Count);
+
+                // Finally, offset the given childs probability by the random amount.
+                probSelect.OffsetProbabilityWeight(probSelect.GetChildren()[randomChildIndex]
+                    , offset * randomSign);
+            }
+            else if (random > 0.66f || (probNodes.Count <= 0 && thresholds.Count <= 0)) // Change subtree
+            {
+                Debug.Log("Changing subtree");
+                Node newTree = RandomSubtree();
 
             }
 
