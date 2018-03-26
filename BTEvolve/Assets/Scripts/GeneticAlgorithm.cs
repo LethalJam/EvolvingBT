@@ -70,6 +70,10 @@ public class GeneticAlgorithm : MonoBehaviour {
     [Tooltip("Set the amount of subtrees within the genome.")]
     public int genomeSubtrees = 6;
 
+    // Selection related
+    [Header("Tournament Selection")]
+    public int tourneyContestents = 4;
+
     // Combination related
     [Header("Combination")]
     [Tooltip("Set the probability of a random combination occuring.( 0 - 100%) ")]
@@ -110,6 +114,9 @@ public class GeneticAlgorithm : MonoBehaviour {
             m_simulator.MatchOver += MatchSessionOver;
         else
             Debug.LogError("No matchsimulator was found in GeneticAlgorithm");
+
+        if (tourneyContestents > populationSize)
+            tourneyContestents = populationSize;
     }
 
     protected void Start()
@@ -370,6 +377,32 @@ public class GeneticAlgorithm : MonoBehaviour {
         {
             Debug.LogError("Parents weren't assigned during roulette selection!");
         }
+    }
+
+    // Select a genome using tournament.
+    protected Genome TournamentSelect(List<Genome> population)
+    {
+        List<Genome> contestents = new List<Genome>();
+        // First, randomize number of contestents.
+        for (int i = 0; i < tourneyContestents; i++)
+        {
+            int randomIndex = UnityEngine.Random.Range(0, population.Count);
+            contestents.Add(population[randomIndex]);
+        }
+
+        Genome highestFit = contestents[0];
+        // Find highest fitness among contestents
+        foreach (Genome g in contestents)
+        {
+            if (g.Fitness > highestFit.Fitness)
+                highestFit = g;
+        }
+
+        // Create a copy of the best genome and return it.
+        Genome copy = highestFit.GenomeCopy();
+        copy.RootNode = StaticMethods.DeepCopy<N_Root>(highestFit.RootNode);
+
+        return copy;
     }
 
     // Combine parents and create two new children based on them
