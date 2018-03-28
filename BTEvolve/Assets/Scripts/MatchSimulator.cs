@@ -162,7 +162,6 @@ public class MatchSimulator : MonoBehaviour {
             {
                 if (m_matchTimer >= matchTime)
                     Debug.Log("Timed out at " + m_matchTimer + " sec.");
-
                 EndMatch();
             }
         }

@@ -85,7 +85,15 @@ public class ShooterAgent : MonoBehaviour {
             {
                 // Update health and record overall damage taken.
                 m_health -= be_bullet.GetDamage();
-                m_totalDamageTaken += be_bullet.GetDamage();
+                if (m_health <= 0)
+                {
+                    // Add the previous health to current damage, 
+                    // making sure to not include negative damage taken.
+                    m_totalDamageTaken += (be_bullet.GetDamage() + m_health);
+                    m_health = 0;
+                }
+                else
+                    m_totalDamageTaken += be_bullet.GetDamage();
             }
 
 

@@ -11,6 +11,7 @@ TagManager:
   - agent
   - globals
   - matchSimulator
+  - ButtonCanvas
   layers:
   - Default
   - TransparentFX

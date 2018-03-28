@@ -20,6 +20,8 @@ public class GeneticAlgorithm : MonoBehaviour {
         int damageTaken, damageGiven = 0;
         bool wonLastMatch = false;
         int fitness = 0;
+        // Only used for NSGA2
+        float crowdingDistance = 0.0f;
 
         // Initialize variables.
         public Genome()
@@ -50,6 +52,7 @@ public class GeneticAlgorithm : MonoBehaviour {
         public List<Node> SubRoots { get { return subRoots; } set { subRoots = value; } }
         public int Fitness { get { return fitness;  } set { fitness = value; } }
         public int DamageTaken { get { return damageTaken; } set { damageTaken = value; } }
+        public float CrowdingDistance { get { return crowdingDistance; } set { crowdingDistance = value; } }
         public int DamageGiven { get { return damageGiven; } set { damageGiven = value; } }
         public bool WonLastMatch { get { return wonLastMatch;  } set { wonLastMatch = value; } }
 
@@ -102,6 +105,8 @@ public class GeneticAlgorithm : MonoBehaviour {
     protected Genome bestGenome;
     protected bool simulating = false;
     protected bool simulationDone = false;
+    // Used for re-enabling interface after evolution
+    protected GameObject buttonCanvas;
 
     #region Initialization (Awake/Start)
     // Make sure that common GA functions are at lowest protected, not private.
@@ -115,15 +120,26 @@ public class GeneticAlgorithm : MonoBehaviour {
         else
             Debug.LogError("No matchsimulator was found in GeneticAlgorithm");
 
+        buttonCanvas = GameObject.FindGameObjectWithTag("ButtonCanvas");
+        if (buttonCanvas == null)
+            Debug.LogError("No gameobject with tag ButtonCanvas was found");
+
         if (tourneyContestents > populationSize)
             tourneyContestents = populationSize;
     }
 
+    // Methods for starting during Start initialization
+    // or through publically accessable function.
     protected void Start()
     {
         if (evolveOnStart)
             StartCoroutine(Evolve());
     }
+    public void StartEvolution()
+    {
+        StartCoroutine(Evolve());
+    }
+
     #endregion
 
     protected void MatchSessionOver(object sender, EventArgs args)
@@ -380,7 +396,7 @@ public class GeneticAlgorithm : MonoBehaviour {
     }
 
     // Select a genome using tournament.
-    protected Genome TournamentSelect(List<Genome> population)
+    protected virtual Genome TournamentSelect(List<Genome> population)
     {
         List<Genome> contestents = new List<Genome>();
         // First, randomize number of contestents.
@@ -565,6 +581,7 @@ public class GeneticAlgorithm : MonoBehaviour {
         }
         // Save the final best tree.
         FileSaver.GetInstance().SaveTree(bestGenome.RootNode, "singleEvolved");
+        buttonCanvas.SetActive(true);
 
         yield return null;
     }
