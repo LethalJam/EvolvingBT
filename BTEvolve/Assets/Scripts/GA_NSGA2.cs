@@ -8,10 +8,6 @@ public class GA_NSGA2 : GeneticAlgorithm {
     private int damageTakenMin = 0, damageTakenMax = 400;
     private int damageGivenMin = 0, damageGivenMax = 400;
 
-    // NSGA2 specific sub-populations
-    private List<Genome> prevPop;
-    private List<Genome> currentPop;
-
     #region DominationGenome
     // "Decorator" used for tracking dominated genomes and their relations
     public class DominationGenome
@@ -82,7 +78,7 @@ public class GA_NSGA2 : GeneticAlgorithm {
         }
 
         // Lower rank (and thereby fitness) is better.
-        int rank = 1;
+        int rank = 0;
         // Keep iterationg through each front while there is a next one.
         while (front.Count > 0)
         {
@@ -109,6 +105,84 @@ public class GA_NSGA2 : GeneticAlgorithm {
 
     }
 
+    public List<List<Genome>> GetFrontsByNondomination (List<Genome> genomes)
+    {
+        List<DominationGenome> gByDom = new List<DominationGenome>();
+        List<DominationGenome> prevFront = new List<DominationGenome>();
+        List<DominationGenome> front = new List<DominationGenome>();
+        List<List<Genome>> fronts = new List<List<Genome>>();
+
+        foreach (Genome g in genomes)
+        {
+            gByDom.Add(new DominationGenome(g));
+        }
+
+        // First assign domination count and set of dominated genomes for each genome.
+        for (int i = 0; i < gByDom.Count; i++)
+        {
+            for (int j = 0; j < gByDom.Count; j++)
+            {
+                Genome current = gByDom[i].Genome;
+                Genome other = gByDom[j].Genome;
+
+                // Check if other dominates current
+                if ((other.DamageGiven >= current.DamageGiven && other.DamageTaken <= current.DamageTaken)
+                    && (other.DamageGiven > current.DamageGiven || other.DamageTaken < current.DamageTaken))
+                { // other dominates current
+                    // Add to the dominationcount of current
+                    gByDom[i].DominationCount++;
+                }
+                else if ((current.DamageGiven >= other.DamageGiven && current.DamageTaken <= other.DamageTaken)
+                    && (current.DamageGiven > other.DamageGiven || current.DamageTaken < other.DamageTaken))
+                { // current dominates other
+                    // Add other to list of currents dominated genomes.
+                    gByDom[i].DominatedGenomes.Add(gByDom[j]);
+                }
+            }
+
+            // Identify the first front as the genomes that aren't dominated by any other genomes.
+            if (gByDom[i].DominationCount == 0)
+            {
+                front.Add(gByDom[i]);
+            }
+        }
+
+
+        // Lower rank (and thereby fitness) is better.
+        int rank = 0;
+        // Keep iterationg through each front while there is a next one.
+        while (front.Count > 0)
+        {
+            prevFront = front;
+            front = new List<DominationGenome>();
+            List<Genome> returnFront = new List<Genome>();
+
+            // For all genomes in previous front
+            foreach (DominationGenome dg in prevFront)
+            {
+                // Set fitness of the current front equal to the rank.
+                dg.Genome.Fitness = rank;
+                returnFront.Add(dg.Genome);
+
+                for (int i = 0; i < dg.DominatedGenomes.Count; i++)
+                {
+                    // Reduce the dominated genomes domination count by one and add it to the next front if
+                    // it's at zero.
+                    DominationGenome dominated = dg.DominatedGenomes[i];
+                    dominated.DominationCount--;
+                    if (dominated.DominationCount <= 0)
+                        front.Add(dominated);
+                }
+            }
+            // Increase rank to make fitness higher (worse) for every new front.
+            rank++;
+            // Add this front to the collection on fronts.
+            fronts.Add(returnFront);
+        }
+
+        return fronts;
+    }
+
     public void CalculateCrowdingDistance(List<Genome> genomes)
     {
         // Calculate crowding distance by DamageTaken
@@ -132,6 +206,29 @@ public class GA_NSGA2 : GeneticAlgorithm {
             genomes[i].CrowdingDistance
                 = genomes[i].CrowdingDistance +
                 (genomes[i + 1].DamageGiven - genomes[i - 1].DamageGiven) / (damageGivenMax - damageGivenMin);
+        }
+    }
+
+    public void SortCrowdedComparison(List<Genome> genomes)
+    {
+        for (int i = 1; i < genomes.Count; i++)
+        {
+            int j = i;
+            while (j > 0 && genomes[j - 1].Fitness >= genomes[j].Fitness)
+            {
+                // Swap
+                Genome back = genomes[j - 1];
+                Genome front = genomes[j];
+                if (front.Fitness != back.Fitness
+                    || front.CrowdingDistance > back.CrowdingDistance)
+                {
+                    genomes[j - 1] = front;
+                    genomes[j] = back;
+                }
+
+                // Decrement inner
+                j--;
+            }
         }
     }
 
@@ -250,40 +347,58 @@ public class GA_NSGA2 : GeneticAlgorithm {
         // Run general algorithm for remaining -th generations. (index 1 and forward
         for (int i = 1; i < generations; i++)
         {
-            Debug.Log("Starting simulation step of generation " + i + "... ");
-            // Start simulation and wait until done.
-            simulationDone = false;
-            StartCoroutine(Simulate());
-            yield return new WaitUntil(() => simulationDone);
-            Debug.Log("Simulation step complete!");
+            // First, create new generation as a combination of the last and the one before that.
+            List<Genome> combinedGenomes = new List<Genome>();
+            combinedGenomes.AddRange(m_population);
+            combinedGenomes.AddRange(m_childPop);
+            
+            List<Genome> nextPopCandidates = new List<Genome>();
+            // Sort according to nondomination and return list of fronts
+            List<List<Genome>> fronts = GetFrontsByNondomination(combinedGenomes);
+            int frontIndex = 0;
+            // Create set of potential genome candidats
+            while (nextPopCandidates.Count + fronts[frontIndex].Count <= populationSize)
+            {
+                // Calculate crowding distance for the front and add it to the population.
+                CalculateCrowdingDistance(fronts[frontIndex]);
+                nextPopCandidates.AddRange(fronts[frontIndex]);
 
-            // After simulation, start evaluation.
-            Evaluate();
+                frontIndex++;
+            }
 
-            // Add genomes to childpop until it's the same size as previous.
-            while (m_childPop.Count < m_population.Count)
+            // Sort the front that didn't fit
+            SortCrowdedComparison(fronts[frontIndex]);
+            int fillingIndex = 0;
+            // Complete the population by adding from the sorted front
+            while (nextPopCandidates.Count < populationSize)
+            {
+                nextPopCandidates.Add(fronts[frontIndex][fillingIndex]);
+                fillingIndex++;
+            }
+
+            // Push child back to pop and create new child using nextpop made from child and pop
+            m_population = m_childPop;
+            m_childPop = new List<Genome>();
+
+            // Finally, create the childpop for next generation.
+            while (m_childPop.Count < populationSize)
             {
                 Genome parent0, parent1;
-                // Select genomes given the results of simulation.
-                RouletteSelect(out parent0, out parent1);
+                parent0 = BinaryCrowdedTournamentSelect(nextPopCandidates);
+                parent1 = BinaryCrowdedTournamentSelect(nextPopCandidates);
 
-                // Combine parents to retrieve two children.
+                // Combine parents to retrieve two children
                 Genome child0, child1;
                 Combine(out child0, out child1, parent0, parent1);
 
-                // Finally, randomly mutate children and then add them to population.
                 Mutate(child0.RootNode);
                 Mutate(child1.RootNode);
                 m_childPop.Add(child0);
                 m_childPop.Add(child1);
             }
 
-            // Set the previous population to the current childPop.
-            m_population = m_childPop;
-            // Reset childpop for next generaion.
-            m_childPop = new List<Genome>();
         }
-        // Save the final best tree.
+        // Save the final best tree. // MAKE SURE TO UPDATE BESTGENOME
         FileSaver.GetInstance().SaveTree(bestGenome.RootNode, "multiEvolved");
         buttonCanvas.SetActive(true);
 
