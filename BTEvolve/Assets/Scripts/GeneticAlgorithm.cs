@@ -261,10 +261,10 @@ public class GeneticAlgorithm : MonoBehaviour {
     #region Evolution
 
     // Simulate genomes against the currently best one and save results of match
-    protected IEnumerator Simulate()
+    protected IEnumerator Simulate(List<Genome> genomes)
     {
         // Simulate the genomes against the current best ones.
-        foreach (Genome g in m_population)
+        foreach (Genome g in genomes)
         {
             // Set the agent BTs and start match.
             m_simulator.SetAgentBTs(g.RootNode, bestGenome.RootNode);
@@ -549,7 +549,7 @@ public class GeneticAlgorithm : MonoBehaviour {
             Debug.Log("Starting simulation step of generation " + i + "... ");
             // Start simulation and wait until done.
             simulationDone = false;
-            StartCoroutine(Simulate());
+            StartCoroutine(Simulate(m_population));
             yield return new WaitUntil(() => simulationDone);
             Debug.Log("Simulation step complete!");
 

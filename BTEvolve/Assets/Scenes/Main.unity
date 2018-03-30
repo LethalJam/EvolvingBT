@@ -1318,9 +1318,9 @@ MonoBehaviour:
   evolveOnStart: 0
   additionalCompChance: 0.3
   generations: 10
-  populationSize: 40
+  populationSize: 4
   genomeSubtrees: 6
-  tourneyContestents: 4
+  tourneyContestents: 2
   combinationRate: 0.5
   mutationRate: 0.05
   minThresholdOffset: -10

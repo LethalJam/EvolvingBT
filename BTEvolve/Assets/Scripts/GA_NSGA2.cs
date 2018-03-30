@@ -4,9 +4,6 @@ using UnityEngine;
 
 public class GA_NSGA2 : GeneticAlgorithm {
 
-    // Max is given by maxhp + all possible healthpacks in the game.
-    private int damageTakenMin = 0, damageTakenMax = 400;
-    private int damageGivenMin = 0, damageGivenMax = 400;
 
     #region DominationGenome
     // "Decorator" used for tracking dominated genomes and their relations
@@ -182,18 +179,49 @@ public class GA_NSGA2 : GeneticAlgorithm {
 
         return fronts;
     }
-
+    
+    // Function for calculating crowding distance for each genome in the given assumed front
     public void CalculateCrowdingDistance(List<Genome> genomes)
     {
+
+        float minDT = 0.0f, maxDT = 0.0f;
+        float minDG = 0.0f, maxDG = 0.0f;
+        // Get normalized min and max of the objective
+        for (int i = 0; i < genomes.Count; i++)
+        {
+            Genome g = genomes[i];
+            float DG = (float)g.DamageGiven;
+            float DT = (float)g.DamageTaken;
+
+            if (DG < minDG)
+                minDG = DG;
+            if (DG > maxDG)
+                maxDG = DG;
+
+            if (DT < minDT)
+                minDT = DT;
+            if (DT > maxDT)
+                maxDT = DT;
+
+            // Set normalized boundries
+            minDT = minDT / maxDT;
+            maxDT = 1.0f;
+        }
+
         // Calculate crowding distance by DamageTaken
         SortByDamagetaken(genomes);
 
         genomes[0].CrowdingDistance = genomes[genomes.Count - 1].CrowdingDistance = Mathf.Infinity;
         for (int i = 1; i < genomes.Count - 1; i++)
         {
+            // Retrieve previous and next values for the objective and normalize them.
+            float next = (float)genomes[i + 1].DamageTaken;
+            float prev = (float)genomes[i - 1].DamageTaken;
+            next /= maxDT;
+            prev /= maxDT;
+
             genomes[i].CrowdingDistance
-                = genomes[i].CrowdingDistance + 
-                (genomes[i + 1].DamageTaken - genomes[i - 1].DamageTaken) / (damageTakenMax - damageTakenMin);
+                = genomes[i].CrowdingDistance + (next - prev) / (maxDT - minDT);
         }
 
 
@@ -203,9 +231,14 @@ public class GA_NSGA2 : GeneticAlgorithm {
         genomes[0].CrowdingDistance = genomes[genomes.Count - 1].CrowdingDistance = Mathf.Infinity;
         for (int i = 1; i < genomes.Count-1; i++)
         {
+            // Retrieve previous and next values for the objective and normalize them.
+            float next = (float)genomes[i + 1].DamageGiven;
+            float prev = (float)genomes[i - 1].DamageGiven;
+            next /= maxDG;
+            prev /= maxDG;
+
             genomes[i].CrowdingDistance
-                = genomes[i].CrowdingDistance +
-                (genomes[i + 1].DamageGiven - genomes[i - 1].DamageGiven) / (damageGivenMax - damageGivenMin);
+                = genomes[i].CrowdingDistance + (next - prev) / (maxDG - minDG);
         }
     }
 
@@ -299,6 +332,20 @@ public class GA_NSGA2 : GeneticAlgorithm {
         return copy;
     }
 
+    // Return the genome with highest crowding distance among the front.
+    public Genome BestFromFront (List<Genome> genomes)
+    {
+        Genome best = genomes[0];
+
+        for (int i = 1; i < genomes.Count; i++)
+        {
+            if (genomes[i].CrowdingDistance > best.CrowdingDistance)
+                best = genomes[i];
+        }
+
+        return best;
+    }
+
     #region Evolution
     // Update is called once per frame
     public override IEnumerator Evolve()
@@ -319,7 +366,7 @@ public class GA_NSGA2 : GeneticAlgorithm {
         Debug.Log("Starting simulation step of initial population...");
         // Start simulation and wait until done.
         simulationDone = false;
-        StartCoroutine(Simulate());
+        StartCoroutine(Simulate(m_population));
         yield return new WaitUntil(() => simulationDone);
         Debug.Log("Simulation step of initial population complete!");
 
@@ -344,6 +391,7 @@ public class GA_NSGA2 : GeneticAlgorithm {
             m_childPop.Add(child1);
         }
 
+        Debug.Log("Evolving rest of generations...");
         // Run general algorithm for remaining -th generations. (index 1 and forward
         for (int i = 1; i < generations; i++)
         {
@@ -351,11 +399,17 @@ public class GA_NSGA2 : GeneticAlgorithm {
             List<Genome> combinedGenomes = new List<Genome>();
             combinedGenomes.AddRange(m_population);
             combinedGenomes.AddRange(m_childPop);
-            
+
             List<Genome> nextPopCandidates = new List<Genome>();
             // Sort according to nondomination and return list of fronts
             List<List<Genome>> fronts = GetFrontsByNondomination(combinedGenomes);
             int frontIndex = 0;
+
+            // Retrieve the best genome from front 0, used for simulation
+            Genome bestBack = BestFromFront(fronts[0]);
+            bestGenome = bestBack.GenomeCopy();
+            bestGenome.RootNode = StaticMethods.DeepCopy<N_Root>(bestBack.RootNode);
+
             // Create set of potential genome candidats
             while (nextPopCandidates.Count + fronts[frontIndex].Count <= populationSize)
             {
@@ -397,8 +451,14 @@ public class GA_NSGA2 : GeneticAlgorithm {
                 m_childPop.Add(child1);
             }
 
+            Debug.Log("Starting simulation step of generation " + i);
+            // Start simulation and wait until done.
+            simulationDone = false;
+            StartCoroutine(Simulate(m_childPop));
+            yield return new WaitUntil(() => simulationDone);
+            Debug.Log("Simulation step complete!");
         }
-        // Save the final best tree. // MAKE SURE TO UPDATE BESTGENOME
+        // Save the final best tree.
         FileSaver.GetInstance().SaveTree(bestGenome.RootNode, "multiEvolved");
         buttonCanvas.SetActive(true);
 
