@@ -107,11 +107,15 @@ public class GeneticAlgorithm : MonoBehaviour {
     protected bool simulationDone = false;
     // Used for re-enabling interface after evolution
     protected GameObject buttonCanvas;
+    protected FeedbackText feedbackText;
 
     #region Initialization (Awake/Start)
     // Make sure that common GA functions are at lowest protected, not private.
     protected void Awake()
     {
+        feedbackText = GameObject.FindGameObjectWithTag("FeedbackText").GetComponent<FeedbackText>();
+        if (feedbackText == null)
+            Debug.LogError("No FeedbackText found in GeneticAlgorithm");
         // Initialize values
         m_simulator = GameObject.FindGameObjectWithTag("matchSimulator").GetComponent<MatchSimulator>();
 
@@ -581,6 +585,7 @@ public class GeneticAlgorithm : MonoBehaviour {
         }
         // Save the final best tree.
         FileSaver.GetInstance().SaveTree(bestGenome.RootNode, "singleEvolved");
+        feedbackText.SetText("Single evolution complete!");
         buttonCanvas.SetActive(true);
 
         yield return null;

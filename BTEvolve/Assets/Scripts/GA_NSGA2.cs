@@ -460,6 +460,7 @@ public class GA_NSGA2 : GeneticAlgorithm {
         }
         // Save the final best tree.
         FileSaver.GetInstance().SaveTree(bestGenome.RootNode, "multiEvolved");
+        feedbackText.SetText("Multi evolution complete!");
         buttonCanvas.SetActive(true);
 
         yield return null;

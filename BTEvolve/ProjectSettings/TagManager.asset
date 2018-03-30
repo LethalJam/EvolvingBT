@@ -12,6 +12,7 @@ TagManager:
   - globals
   - matchSimulator
   - ButtonCanvas
+  - FeedbackText
   layers:
   - Default
   - TransparentFX
