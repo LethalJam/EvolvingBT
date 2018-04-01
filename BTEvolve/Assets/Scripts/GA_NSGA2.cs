@@ -357,12 +357,9 @@ public class GA_NSGA2 : GeneticAlgorithm {
         }
         // Randomly generate the first best genome.
         bestGenome = RandomGenome();
-        // Set the starting fitness of best to be the same as default fitness of 
-        // population genomes.
-        bestGenome.Fitness = 100;
 
         // First, process the initial population differently.
-
+        feedbackText.SetText("Generation " + 0 + " out of " + generations + "...");
         Debug.Log("Starting simulation step of initial population...");
         // Start simulation and wait until done.
         simulationDone = false;
@@ -395,6 +392,8 @@ public class GA_NSGA2 : GeneticAlgorithm {
         // Run general algorithm for remaining -th generations. (index 1 and forward
         for (int i = 1; i < generations; i++)
         {
+            feedbackText.SetText("Generation " + i + " out of " + generations + "...");
+
             // First, create new generation as a combination of the last and the one before that.
             List<Genome> combinedGenomes = new List<Genome>();
             combinedGenomes.AddRange(m_population);

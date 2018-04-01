@@ -390,7 +390,7 @@ public class ShooterAgent : MonoBehaviour {
         if (m_health <= 0 && m_myState != AgentState.dead
             && m_simulator.MatchInProgress)
         {
-            Debug.Log(transform.gameObject.name + " died! ");
+            //Debug.Log(transform.gameObject.name + " died! ");
             m_myState = AgentState.dead;
             m_simulator.EndMatch();
             if (destroyOnDeath)

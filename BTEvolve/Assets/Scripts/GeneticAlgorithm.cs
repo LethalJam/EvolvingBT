@@ -149,7 +149,7 @@ public class GeneticAlgorithm : MonoBehaviour {
     protected void MatchSessionOver(object sender, EventArgs args)
     {
         simulating = false;
-        Debug.Log("Match over!");
+        //Debug.Log("Match over!");
     }
 
     #region BT generation
@@ -291,6 +291,7 @@ public class GeneticAlgorithm : MonoBehaviour {
     // Assign fitness values according to their performance in the simulation step
     protected void Evaluate()
     {
+        bestGenome = m_population[0];
         // Assign fitness value for each genome based on its statistics.
         foreach (Genome g in m_population)
         {
@@ -433,7 +434,7 @@ public class GeneticAlgorithm : MonoBehaviour {
         float random = UnityEngine.Random.Range(0.0f, 1.0f);
         if (random < combinationRate)
         {
-            Debug.Log("Combining!!");
+            //Debug.Log("Combining!!");
             // Get initial comp of parent 0
             N_CompositionNode comp0 = parent0.RootNode.Child as N_CompositionNode;
             // Fetch a random subtree from the parent's subtrees
@@ -472,7 +473,7 @@ public class GeneticAlgorithm : MonoBehaviour {
         float random = UnityEngine.Random.Range(0.0f, 1.0f);
         if (random <  1.0f) // TEMPORARY CHANGE TO mutationRate AFTER TESTING
         {
-            Debug.Log("Mutating!!");
+            //Debug.Log("Mutating!!");
             List<Node> thresholds = TreeOperations.RetrieveNodesOfType(child, typeof(N_Threshold));
             List<Node> probNodes = TreeOperations.RetrieveNodesOfType(child, typeof(N_ProbabilitySelector));
 
@@ -482,7 +483,7 @@ public class GeneticAlgorithm : MonoBehaviour {
             if ((random <= 0.33f && thresholds.Count > 0) 
                 || (probNodes.Count <= 0 && random <= 0.66f && thresholds.Count > 0))
             {
-                Debug.Log("Changing condition");
+                //Debug.Log("Changing condition");
                 // Get random index within range of list
                 int index = UnityEngine.Random.Range(0, thresholds.Count);
                 N_Threshold thresh = thresholds[index] as N_Threshold;
@@ -493,7 +494,7 @@ public class GeneticAlgorithm : MonoBehaviour {
             }
             else if (random > 0.33f && random <= 0.66f && probNodes.Count > 0) // Adjust relative probabilities on a probability selector.
             {
-                Debug.Log("Changing probability");
+                //Debug.Log("Changing probability");
                 // Get random index within range of list
                 int index = UnityEngine.Random.Range(0, probNodes.Count);
                 N_ProbabilitySelector probSelect = probNodes[index] as N_ProbabilitySelector;
@@ -520,7 +521,7 @@ public class GeneticAlgorithm : MonoBehaviour {
             }
             else if (random > 0.66f || (probNodes.Count <= 0 && thresholds.Count <= 0)) // Change subtree
             {
-                Debug.Log("Changing subtree");
+                //Debug.Log("Changing subtree");
                 N_CompositionNode rootComp = child.Child as N_CompositionNode;
 
                 // Get a random subtree index and replace its position in the tree with
@@ -550,12 +551,13 @@ public class GeneticAlgorithm : MonoBehaviour {
         // Run algorithm for the given amount of generations.
         for (int i = 0; i < generations; i++)
         {
-            Debug.Log("Starting simulation step of generation " + i + "... ");
+            feedbackText.SetText("Generation " + i + " out of " + generations + "...");
+            //Debug.Log("Starting simulation step of generation " + i + "... ");
             // Start simulation and wait until done.
             simulationDone = false;
             StartCoroutine(Simulate(m_population));
             yield return new WaitUntil(() => simulationDone);
-            Debug.Log("Simulation step complete!");
+            //Debug.Log("Simulation step complete!");
 
             // After simulation, start evaluation.
             Evaluate();

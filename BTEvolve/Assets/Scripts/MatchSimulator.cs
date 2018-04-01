@@ -58,6 +58,9 @@ public class MatchSimulator : MonoBehaviour {
 
     void Awake ()
     {
+        // Make sure simulation runs in background during built application
+        Application.runInBackground = true;
+
         // Find prefab of healthPack for respawning purposes.
         m_hpPrefab = Resources.Load("healthPack") as GameObject;
         if (m_hpPrefab == null)
@@ -160,8 +163,8 @@ public class MatchSimulator : MonoBehaviour {
             // If either of the agents died, end the match.
             if (m_matchTimer >= matchTime)
             {
-                if (m_matchTimer >= matchTime)
-                    Debug.Log("Timed out at " + m_matchTimer + " sec.");
+                //if (m_matchTimer >= matchTime)
+                //    Debug.Log("Timed out at " + m_matchTimer + " sec.");
                 EndMatch();
             }
         }
