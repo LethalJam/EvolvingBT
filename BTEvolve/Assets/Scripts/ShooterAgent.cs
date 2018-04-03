@@ -15,8 +15,8 @@ public class ShooterAgent : MonoBehaviour {
     private int m_maxHealth = 100;
     private int m_health = 100;
     private int m_totalDamageTaken = 0;
-    private int m_bulletMax = 20;
-    private int m_bulletAmount = 20;
+    private int m_bulletMax = 10;
+    private int m_bulletAmount = 10;
 
     // AI related privates
     private NavMeshAgent m_navAgent;
