@@ -388,11 +388,18 @@ public class GA_NSGA2 : GeneticAlgorithm {
             m_childPop.Add(child1);
         }
 
-        Debug.Log("Evolving rest of generations...");
+        //Debug.Log("Evolving rest of generations...");
         // Run general algorithm for remaining -th generations. (index 1 and forward
         for (int i = 1; i < generations; i++)
         {
             feedbackText.SetText("Generation " + i + " out of " + generations + "...");
+
+            //Debug.Log("Starting simulation step of generation " + i);
+            // Start simulation and wait until done.
+            simulationDone = false;
+            StartCoroutine(Simulate(m_childPop));
+            yield return new WaitUntil(() => simulationDone);
+            //Debug.Log("Simulation step complete!");
 
             // First, create new generation as a combination of the last and the one before that.
             List<Genome> combinedGenomes = new List<Genome>();
@@ -404,11 +411,6 @@ public class GA_NSGA2 : GeneticAlgorithm {
             List<List<Genome>> fronts = GetFrontsByNondomination(combinedGenomes);
             int frontIndex = 0;
 
-            // Retrieve the best genome from front 0, used for simulation
-            Genome bestBack = BestFromFront(fronts[0]);
-            bestGenome = bestBack.GenomeCopy();
-            bestGenome.RootNode = StaticMethods.DeepCopy<N_Root>(bestBack.RootNode);
-
             // Create set of potential genome candidats
             while (nextPopCandidates.Count + fronts[frontIndex].Count <= populationSize)
             {
@@ -418,6 +420,11 @@ public class GA_NSGA2 : GeneticAlgorithm {
 
                 frontIndex++;
             }
+
+            // Retrieve the best genome from front 0, used for simulation
+            Genome bestBack = BestFromFront(fronts[0]);
+            bestGenome = bestBack.GenomeCopy();
+            bestGenome.RootNode = StaticMethods.DeepCopy<N_Root>(bestBack.RootNode);
 
             // Sort the front that didn't fit
             SortCrowdedComparison(fronts[frontIndex]);
@@ -450,12 +457,6 @@ public class GA_NSGA2 : GeneticAlgorithm {
                 m_childPop.Add(child1);
             }
 
-            Debug.Log("Starting simulation step of generation " + i);
-            // Start simulation and wait until done.
-            simulationDone = false;
-            StartCoroutine(Simulate(m_childPop));
-            yield return new WaitUntil(() => simulationDone);
-            Debug.Log("Simulation step complete!");
         }
         // Save the final best tree.
         FileSaver.GetInstance().SaveTree(bestGenome.RootNode, "multiEvolved");
