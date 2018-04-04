@@ -18,6 +18,7 @@ public static class BehaviourSubtrees {
         hpTree.AddLast(flipHealthCheck);
         hpTree.AddLast(flipGetHp);
 
+        hpTree.IsSubtree = true;
         return hpTree;
     }
 
@@ -35,6 +36,7 @@ public static class BehaviourSubtrees {
         reloadSequence.AddLast(ammoCheck);
         reloadSequence.AddLast(reload);
 
+        reloadSequence.IsSubtree = true;
         return reloadSequence;
     }
 
@@ -47,6 +49,7 @@ public static class BehaviourSubtrees {
         shootTree.AddLast(new N_ShootAtEnemy(agent));
         N_DecSuccess success = new N_DecSuccess(shootTree);
 
+        success.IsSubtree = true;
         return success;
         //return shootTree;
     }
@@ -59,7 +62,9 @@ public static class BehaviourSubtrees {
         //N_DecSuccess patrolSuccess = new N_DecSuccess(new N_Patrol(agent));
         //patrolSequence.AddLast(patrolSuccess);
         //patrolSequence.AddLast(Tree_ShootAtEnemy(agent));
-        return new N_Patrol(agent);
+        N_Patrol patrol = new N_Patrol(agent);
+        patrol.IsSubtree = true;
+        return patrol;
     }
 
     // Sequence for moving by patroling or kiting.
@@ -83,6 +88,7 @@ public static class BehaviourSubtrees {
         enemyOrPatrol.AddLast(enemyThenKiteOrPatrol);
         enemyOrPatrol.AddLast(new N_Patrol(agent));
 
+        enemyOrPatrol.IsSubtree = true;
         return enemyOrPatrol;
     }
 
@@ -95,6 +101,7 @@ public static class BehaviourSubtrees {
         turnSequence.AddLast(new N_DecFlip(new N_IsEnemyVisible(agent)));
         turnSequence.AddLast(new N_TurnAround(agent));
 
+        turnSequence.IsSubtree = true;
         return turnSequence;
     }
 
@@ -107,6 +114,7 @@ public static class BehaviourSubtrees {
         followSequence.AddLast(new N_DecFlip(new N_IsEnemyVisible(agent)));
         followSequence.AddLast(new N_FollowEnemy(agent));
 
+        followSequence.IsSubtree = true;
         return followSequence;
     }
 

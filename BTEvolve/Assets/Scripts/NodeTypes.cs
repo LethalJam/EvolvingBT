@@ -13,6 +13,7 @@ public enum Response
 [Serializable]
 public abstract class Node : ICloneable
 {
+    protected bool m_isSubtree = false;
     public object Clone()
     {
         return MemberwiseClone();
@@ -20,6 +21,7 @@ public abstract class Node : ICloneable
 
     protected Node parent = null;
 
+    public bool IsSubtree { get { return m_isSubtree; } set { m_isSubtree = value; } }
     public Node Parent { get { return parent; } set { parent = value; } }
     // Send signal to node.
     public abstract Response Signal();

@@ -163,28 +163,28 @@ public class GeneticAlgorithm : MonoBehaviour {
         N_CompositionNode firstComp = RandomComp();
         
         N_CompositionNode currentComp = firstComp;
-        //bool nestled = false;
+        bool nestled = false;
 
         // Generate random subtrees 
         for (int i = 0; i < genomeSubtrees; i++)
         {
             // Calculate random chance for adding a new composition as well
             // as ending it.
-            //float randomChance = UnityEngine.Random.Range(0.0f, 1.0f);
-            //if (randomChance < additionalCompChance && !nestled)
-            //{
-            //    nestled = true;
-            //    N_CompositionNode subComp = RandomComp();
+            float randomChance = UnityEngine.Random.Range(0.0f, 1.0f);
+            if (randomChance < additionalCompChance && !nestled)
+            {
+                nestled = true;
+                N_CompositionNode subComp = RandomComp();
 
-            //    // Attach new composition and add a subtree to it.
-            //    currentComp.AddLast(subComp);
-            //    currentComp = subComp;
-            //}
-            //else if (randomChance < (additionalCompChance+0.2f))
-            //{
-            //    nestled = false;
-            //    currentComp = firstComp;
-            //}
+                // Attach new composition and add a subtree to it.
+                currentComp.AddLast(subComp);
+                currentComp = subComp;
+            }
+            else if (randomChance < (additionalCompChance + 0.2f) && nestled)
+            {
+                nestled = false;
+                currentComp = firstComp;
+            }
 
             // Lastly, add a random subtree to the current composition as
             // well as to the list of subtree roots.
@@ -426,33 +426,56 @@ public class GeneticAlgorithm : MonoBehaviour {
         float random = UnityEngine.Random.Range(0.0f, 1.0f);
         if (random < combinationRate)
         {
-            //Debug.Log("Combining!!");
-            // Get initial comp of parent 0
-            N_CompositionNode comp0 = parent0.RootNode.Child as N_CompositionNode;
-            // Fetch a random subtree from the parent's subtrees
-            int randomIndex = UnityEngine.Random.Range(0, comp0.GetChildren().Count);
-            subtree0 = comp0.GetChildren()[randomIndex];
+            List<Node> subtrees0 = TreeOperations.RetrieveSubtreeNodes(parent0.RootNode);
+            List<Node> subtrees1 = TreeOperations.RetrieveSubtreeNodes(parent1.RootNode);
 
-            // Get initial comp of parent 1
-            N_CompositionNode comp1 = parent1.RootNode.Child as N_CompositionNode;
-            // Fetch a random subtree from the parent's subtrees
-            randomIndex = UnityEngine.Random.Range(0, comp1.GetChildren().Count);
-            subtree1 = comp1.GetChildren()[randomIndex];
+            // Select to random subtrees...
+            int randomIndex = UnityEngine.Random.Range(0, subtrees0.Count);
+            subtree0 = subtrees0[randomIndex];
+            randomIndex = UnityEngine.Random.Range(0, subtrees1.Count);
+            subtree1 = subtrees1[randomIndex];
 
             // Swap subtrees between 0 and 1.
             if (subtree0.Parent.GetType().IsSubclassOf(typeof(N_CompositionNode)))
             {
+                N_CompositionNode comp0 = subtree0.Parent as N_CompositionNode;
                 comp0.ReplaceChild(subtree0, StaticMethods.DeepCopy<Node>(subtree1));
             }
 
             // Swap subtrees between 1 and 0.
             if (subtree1.Parent.GetType().IsSubclassOf(typeof(N_CompositionNode)))
             {
+                N_CompositionNode comp1 = subtree1.Parent as N_CompositionNode;
                 comp1.ReplaceChild(subtree1, StaticMethods.DeepCopy<Node>(subtree0));
             }
 
+            #region Old Combination
+            //// Get initial comp of parent 0
+            //N_CompositionNode comp0 = parent0.RootNode.Child as N_CompositionNode;
+            //// Fetch a random subtree from the parent's subtrees
+            //int randomIndex = UnityEngine.Random.Range(0, comp0.GetChildren().Count);
+            //subtree0 = comp0.GetChildren()[randomIndex];
+
+            //// Get initial comp of parent 1
+            //N_CompositionNode comp1 = parent1.RootNode.Child as N_CompositionNode;
+            //// Fetch a random subtree from the parent's subtrees
+            //randomIndex = UnityEngine.Random.Range(0, comp1.GetChildren().Count);
+            //subtree1 = comp1.GetChildren()[randomIndex];
+
+            //// Swap subtrees between 0 and 1.
+            //if (subtree0.Parent.GetType().IsSubclassOf(typeof(N_CompositionNode)))
+            //{
+            //    comp0.ReplaceChild(subtree0, StaticMethods.DeepCopy<Node>(subtree1));
+            //}
+
+            //// Swap subtrees between 1 and 0.
+            //if (subtree1.Parent.GetType().IsSubclassOf(typeof(N_CompositionNode)))
+            //{
+            //    comp1.ReplaceChild(subtree1, StaticMethods.DeepCopy<Node>(subtree0));
+            //}
+            #endregion
         }
-        
+
         // Regardless of combination, assign the children to be the parents. (combined or not)
         child0 = parent0;
         child1 = parent1;
@@ -544,12 +567,10 @@ public class GeneticAlgorithm : MonoBehaviour {
         for (int i = 0; i < generations; i++)
         {
             feedbackText.SetText("Generation " + i + " out of " + generations + "...");
-            //Debug.Log("Starting simulation step of generation " + i + "... ");
             // Start simulation and wait until done.
             simulationDone = false;
             StartCoroutine(Simulate(m_population));
             yield return new WaitUntil(() => simulationDone);
-            //Debug.Log("Simulation step complete!");
 
             // After simulation, start evaluation.
             Evaluate();
