@@ -99,7 +99,9 @@ public class ShooterAgent : MonoBehaviour {
 
             Destroy(be_bullet.gameObject);
         }
-        else if (collision.tag == "healthPack")
+        // Apart from checking tag, also check if the agent is looking for a healthpack
+        // If not, don't pick it up
+        else if (collision.tag == "healthPack" && m_healthPackFound)
         {
             m_health += 50;
             if (m_health > m_maxHealth)

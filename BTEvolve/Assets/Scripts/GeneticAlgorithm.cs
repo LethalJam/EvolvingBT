@@ -371,18 +371,10 @@ public class GeneticAlgorithm : MonoBehaviour {
             {
                 case 0:
                     parent0 = parentG;
-                    //List<Node> newSubroots0 = new List<Node>();
-                    //parent0.RootNode = TreeOperations.GetCopy(selectedTree.RootNode, null, 
-                    //    selectedTree.SubRoots, out newSubroots0);
-                    //parent0.SubRoots = newSubroots0;
                     parent0.RootNode = StaticMethods.DeepCopy<N_Root>(selectedTree.RootNode);
                     break;
                 case 1:
                     parent1 = parentG;
-                    //List<Node> newSubroots1 = new List<Node>();
-                    //parent1.RootNode = TreeOperations.GetCopy(selectedTree.RootNode, null,
-                    //    selectedTree.SubRoots, out newSubroots1);
-                    //parent1.SubRoots = newSubroots1;
                     parent1.RootNode = StaticMethods.DeepCopy<N_Root>(selectedTree.RootNode);
                     break;
                 default:
@@ -567,7 +559,9 @@ public class GeneticAlgorithm : MonoBehaviour {
             {
                 Genome parent0, parent1;
                 // Select genomes given the results of simulation.
-                RouletteSelect(out parent0, out parent1);
+                //RouletteSelect(out parent0, out parent1);
+                parent0 = TournamentSelect(m_population);
+                parent1 = TournamentSelect(m_population);
 
                 // Combine parents to retrieve two children.
                 Genome child0, child1;
