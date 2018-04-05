@@ -486,19 +486,17 @@ public class GeneticAlgorithm : MonoBehaviour {
     {
         // First, check if there'll be any mutation at all.
         float random = UnityEngine.Random.Range(0.0f, 1.0f);
-        if (random <  1.0f) // TEMPORARY CHANGE TO mutationRate AFTER TESTING
+        if (random <  mutationRate)
         {
-            //Debug.Log("Mutating!!");
             List<Node> thresholds = TreeOperations.RetrieveNodesOfType(child, typeof(N_Threshold));
             List<Node> probNodes = TreeOperations.RetrieveNodesOfType(child, typeof(N_ProbabilitySelector));
 
             // Randomise between whether to change thresholds or probabilities
             random = UnityEngine.Random.Range(0.0f, 1.0f);
             // If no probnode exists, change condition if there are any instead
-            if ((random <= 0.33f && thresholds.Count > 0) 
-                || (probNodes.Count <= 0 && random <= 0.66f && thresholds.Count > 0))
+            if ((random <= 0.25f && thresholds.Count > 0))
             {
-                //Debug.Log("Changing condition");
+                Debug.Log("Changing threshold!");
                 // Get random index within range of list
                 int index = UnityEngine.Random.Range(0, thresholds.Count);
                 N_Threshold thresh = thresholds[index] as N_Threshold;
@@ -507,9 +505,9 @@ public class GeneticAlgorithm : MonoBehaviour {
                 int offset = UnityEngine.Random.Range(minThresholdOffset, maxTresholdOffset);
                 thresh.SetThreshold(thresh.Threshold + offset);
             }
-            else if (random > 0.33f && random <= 0.66f && probNodes.Count > 0) // Adjust relative probabilities on a probability selector.
+            else if (random > 0.25f && random <= 0.5f && probNodes.Count > 0) // Adjust relative probabilities on a probability selector.
             {
-                //Debug.Log("Changing probability");
+                Debug.Log("Changing prob!");
                 // Get random index within range of list
                 int index = UnityEngine.Random.Range(0, probNodes.Count);
                 N_ProbabilitySelector probSelect = probNodes[index] as N_ProbabilitySelector;
@@ -534,15 +532,52 @@ public class GeneticAlgorithm : MonoBehaviour {
                 probSelect.OffsetProbabilityWeight(probSelect.GetChildren()[randomChildIndex]
                     , offset * randomSign);
             }
-            else if (random > 0.66f || (probNodes.Count <= 0 && thresholds.Count <= 0)) // Change subtree
+            else if (random > 0.5f && random <= 0.75f) // Change subtree
             {
-                //Debug.Log("Changing subtree");
-                N_CompositionNode rootComp = child.Child as N_CompositionNode;
+                Debug.Log("Changing subtree!");
+                List<Node> subtrees = TreeOperations.RetrieveSubtreeNodes(child);
+                int randomIndex = UnityEngine.Random.Range(0, subtrees.Count);
+                Node subtree = subtrees[randomIndex];
+                N_CompositionNode parentComp = subtree.Parent as N_CompositionNode;
 
                 // Get a random subtree index and replace its position in the tree with
                 // a new randomized subtree instead.
-                int randomSubtree = UnityEngine.Random.Range(0, rootComp.GetChildren().Count);
-                rootComp.ReplaceChild(rootComp.GetChildren()[randomSubtree], RandomSubtree());
+                parentComp.ReplaceChild(subtree, RandomSubtree());
+            }
+            else if (random > 0.75f) // Change composition
+            {
+                Debug.Log("Changing composition!");
+                List<Node> comps = TreeOperations.RetrieveNodesOfType(child, typeof(N_CompositionNode));
+                int randomIndex = UnityEngine.Random.Range(0, comps.Count);
+                N_CompositionNode replaceComp = comps[randomIndex] as N_CompositionNode;
+                
+                // If parent is null, this comp is the initial comp.
+                if (replaceComp.Parent != null)
+                {
+                    Node compParent = replaceComp.Parent;
+                    List<Node> children = replaceComp.GetChildren();
+
+                    // Attach old comps children to the new one.
+                    N_CompositionNode newComp = RandomComp();
+                    foreach (Node c in children)
+                    {
+                        c.Parent = newComp;
+                        newComp.AddLast(c);
+                    }
+
+                    // Reattach parent to the new comp
+                    if (compParent.GetType().IsSubclassOf(typeof(N_CompositionNode)))
+                    {
+                        N_CompositionNode compParent_comp = compParent as N_CompositionNode;
+                        compParent_comp.ReplaceChild(replaceComp, newComp);
+                    }
+                    else if (compParent.GetType().IsSubclassOf(typeof(N_Decorator)))
+                    {
+                        N_Decorator compParent_dec = compParent as N_Decorator;
+                        compParent_dec.Child = newComp;
+                    }
+
+                }
             }
 
         }
