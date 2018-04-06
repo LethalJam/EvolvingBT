@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using System.Linq;
+using UnityEngine.UI;
 
 public class GeneticAlgorithm : MonoBehaviour {
 
@@ -98,6 +99,9 @@ public class GeneticAlgorithm : MonoBehaviour {
         "the total weight of probabilities. ( 5 - 100%) ")]
     public float relativeProbabilityMutation = 5.0f;
 
+    // Inputfield for generations
+    public InputField generationField;
+
     // Protected variables used by all genetic algorithms of this solution.
     protected MatchSimulator m_simulator;
     protected List<Genome> m_population = new List<Genome>();
@@ -128,6 +132,11 @@ public class GeneticAlgorithm : MonoBehaviour {
         if (buttonCanvas == null)
             Debug.LogError("No gameobject with tag ButtonCanvas was found");
 
+        if (generationField == null)
+            Debug.LogError("No Field for generation input was found");
+        else
+            generationField.text = generations.ToString();
+
         if (tourneyContestents > populationSize)
             tourneyContestents = populationSize;
     }
@@ -141,6 +150,12 @@ public class GeneticAlgorithm : MonoBehaviour {
     }
     public void StartEvolution()
     {
+        // Attempt to set generations based on input field
+        int inputGenerations;
+        bool parsed = int.TryParse(generationField.text, out inputGenerations);
+        if (parsed)
+            generations = inputGenerations;
+
         StartCoroutine(Evolve());
     }
 
