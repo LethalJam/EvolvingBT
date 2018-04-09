@@ -282,6 +282,7 @@ public class GeneticAlgorithm : MonoBehaviour {
     // Simulate genomes against the currently best one and save results of match
     protected IEnumerator Simulate(List<Genome> genomes)
     {
+        Debug.Log("Simulating " + genomes.Count + " genomes.");
         // Simulate the genomes against the current best ones.
         foreach (Genome g in genomes)
         {
@@ -511,7 +512,7 @@ public class GeneticAlgorithm : MonoBehaviour {
             // If no probnode exists, change condition if there are any instead
             if ((random <= 0.25f && thresholds.Count > 0))
             {
-                Debug.Log("Changing threshold!");
+                //Debug.Log("Changing threshold!");
                 // Get random index within range of list
                 int index = UnityEngine.Random.Range(0, thresholds.Count);
                 N_Threshold thresh = thresholds[index] as N_Threshold;
@@ -522,7 +523,7 @@ public class GeneticAlgorithm : MonoBehaviour {
             }
             else if (random > 0.25f && random <= 0.5f && probNodes.Count > 0) // Adjust relative probabilities on a probability selector.
             {
-                Debug.Log("Changing prob!");
+                //Debug.Log("Changing prob!");
                 // Get random index within range of list
                 int index = UnityEngine.Random.Range(0, probNodes.Count);
                 N_ProbabilitySelector probSelect = probNodes[index] as N_ProbabilitySelector;
@@ -549,7 +550,7 @@ public class GeneticAlgorithm : MonoBehaviour {
             }
             else if (random > 0.5f && random <= 0.75f) // Change subtree
             {
-                Debug.Log("Changing subtree!");
+                //Debug.Log("Changing subtree!");
                 List<Node> subtrees = TreeOperations.RetrieveSubtreeNodes(child);
                 int randomIndex = UnityEngine.Random.Range(0, subtrees.Count);
                 Node subtree = subtrees[randomIndex];
@@ -561,7 +562,7 @@ public class GeneticAlgorithm : MonoBehaviour {
             }
             else if (random > 0.75f) // Change composition
             {
-                Debug.Log("Changing composition!");
+                //Debug.Log("Changing composition!");
                 List<Node> comps = TreeOperations.RetrieveNodesOfType(child, typeof(N_CompositionNode));
                 int randomIndex = UnityEngine.Random.Range(0, comps.Count);
                 N_CompositionNode replaceComp = comps[randomIndex] as N_CompositionNode;
