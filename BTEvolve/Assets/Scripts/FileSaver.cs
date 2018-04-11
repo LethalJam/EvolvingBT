@@ -34,7 +34,7 @@ public class FileSaver {
         }
 
         BinaryFormatter bf = new BinaryFormatter();
-        FileStream file = File.Open(filePath, FileMode.Open);
+        FileStream file = File.Open(filePath, FileMode.Create);
 
         bf.Serialize(file, tree);
         file.Close();

@@ -282,7 +282,7 @@ public class GeneticAlgorithm : MonoBehaviour {
     // Simulate genomes against the currently best one and save results of match
     protected IEnumerator Simulate(List<Genome> genomes)
     {
-        Debug.Log("Simulating " + genomes.Count + " genomes.");
+        //Debug.Log("Simulating " + genomes.Count + " genomes.");
         // Simulate the genomes against the current best ones.
         foreach (Genome g in genomes)
         {
