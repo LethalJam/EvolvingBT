@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class AgentResults
 {
-    public int damageGiven = 0, damageTaken = 0;
+    public int damageGiven = 0, healthRemaining = 0;
     public bool winner = false;
 }
 
@@ -176,10 +176,10 @@ public class MatchSimulator : MonoBehaviour {
         Time.timeScale = 0.0f;
         m_matchTimer = 0.0f;
         // Damage taken/given agent0
-        result_agent0.damageTaken = behave_agent0.TotalDamageTaken;
+        result_agent0.healthRemaining = behave_agent0.Health;
         result_agent0.damageGiven = behave_agent1.TotalDamageTaken;
         // Damage taken/given agent1
-        result_agent1.damageTaken = behave_agent1.TotalDamageTaken;
+        result_agent1.healthRemaining =  behave_agent1.Health;
         result_agent1.damageGiven = behave_agent0.TotalDamageTaken;
         // Set who won If both win => draw? GA determines this.
         result_agent0.winner = behave_agent0.StateOfAgent != ShooterAgent.AgentState.dead;

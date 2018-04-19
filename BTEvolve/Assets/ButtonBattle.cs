@@ -90,6 +90,7 @@ public class ButtonBattle : MonoBehaviour {
             yield return new WaitUntil(() => !battleOn);
         }
 
+        ScreenCapture.CaptureScreenshot("Resultat.png");
         m_feedbackText.SetText("Single won: " + m_singleWon + ", Multi won: " + m_multiWon);
         m_buttonCanvas.SetActive(true);
         // Reset simulation scale before yielding

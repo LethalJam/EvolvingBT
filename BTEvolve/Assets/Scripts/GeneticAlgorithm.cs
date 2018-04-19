@@ -18,7 +18,7 @@ public class GeneticAlgorithm : MonoBehaviour {
         List<Node> subRoots;
         // Damage taken and given are the latest updated values given from evaluation.
         // These are then taken into consideration when selecting genomes.
-        int damageTaken, damageGiven = 0;
+        int healthRemaining, damageGiven = 0;
         bool wonLastMatch = false;
         int fitness = 0;
         // Only used for NSGA2
@@ -41,7 +41,7 @@ public class GeneticAlgorithm : MonoBehaviour {
         {
             Genome copy = new Genome();
             copy.damageGiven = damageGiven;
-            copy.damageTaken = damageTaken;
+            copy.healthRemaining = healthRemaining;
             copy.fitness = fitness;
             copy.wonLastMatch = wonLastMatch;
 
@@ -52,7 +52,7 @@ public class GeneticAlgorithm : MonoBehaviour {
         public N_Root RootNode { get { return rootNode; } set { rootNode = value; } }
         public List<Node> SubRoots { get { return subRoots; } set { subRoots = value; } }
         public int Fitness { get { return fitness;  } set { fitness = value; } }
-        public int DamageTaken { get { return damageTaken; } set { damageTaken = value; } }
+        public int HealthRemaining { get { return healthRemaining; } set { healthRemaining = value; } }
         public float CrowdingDistance { get { return crowdingDistance; } set { crowdingDistance = value; } }
         public int DamageGiven { get { return damageGiven; } set { damageGiven = value; } }
         public bool WonLastMatch { get { return wonLastMatch;  } set { wonLastMatch = value; } }
@@ -296,7 +296,7 @@ public class GeneticAlgorithm : MonoBehaviour {
             AgentResults results = m_simulator.Agent0Results;
             // Save results in actual genome structure for later evaluation.
             g.DamageGiven = results.damageGiven;
-            g.DamageTaken = results.damageTaken;
+            g.HealthRemaining = results.healthRemaining;
             g.WonLastMatch = results.winner;
         }
         simulationDone = true;
@@ -316,7 +316,8 @@ public class GeneticAlgorithm : MonoBehaviour {
             // set fitness to 150.
             if (g.WonLastMatch && g.DamageGiven > 0)
                 g.Fitness += 150;
-            g.Fitness -= g.DamageTaken;
+
+            g.Fitness += g.HealthRemaining;
             g.Fitness += g.DamageGiven;
 
             // Make the floor of all fitness values 0 to make the roulette selection valid.

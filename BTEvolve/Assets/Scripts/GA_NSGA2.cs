@@ -53,14 +53,14 @@ public class GA_NSGA2 : GeneticAlgorithm {
                 Genome other = gByDom[j].Genome;
 
                 // Check if other dominates current
-                if ((other.DamageGiven >= current.DamageGiven && other.DamageTaken <= current.DamageTaken)
-                    && (other.DamageGiven > current.DamageGiven || other.DamageTaken < current.DamageTaken))
+                if ((other.DamageGiven >= current.DamageGiven && other.HealthRemaining >= current.HealthRemaining)
+                    && (other.DamageGiven > current.DamageGiven || other.HealthRemaining > current.HealthRemaining))
                 { // other dominates current
                     // Add to the dominationcount of current
                     gByDom[i].DominationCount++;
                 }
-                else if ((current.DamageGiven >= other.DamageGiven && current.DamageTaken <= other.DamageTaken)
-                    && (current.DamageGiven > other.DamageGiven || current.DamageTaken < other.DamageTaken))
+                else if ((current.DamageGiven >= other.DamageGiven && current.HealthRemaining >= other.HealthRemaining)
+                    && (current.DamageGiven > other.DamageGiven || current.HealthRemaining > other.HealthRemaining))
                 { // current dominates other
                     // Add other to list of currents dominated genomes.
                     gByDom[i].DominatedGenomes.Add(gByDom[j]);
@@ -123,14 +123,14 @@ public class GA_NSGA2 : GeneticAlgorithm {
                 Genome other = gByDom[j].Genome;
 
                 // Check if other dominates current
-                if ((other.DamageGiven >= current.DamageGiven && other.DamageTaken <= current.DamageTaken)
-                    && (other.DamageGiven > current.DamageGiven || other.DamageTaken < current.DamageTaken))
+                if ((other.DamageGiven >= current.DamageGiven && other.HealthRemaining >= current.HealthRemaining)
+                    && (other.DamageGiven > current.DamageGiven || other.HealthRemaining > current.HealthRemaining))
                 { // other dominates current
                     // Add to the dominationcount of current
                     gByDom[i].DominationCount++;
                 }
-                else if ((current.DamageGiven >= other.DamageGiven && current.DamageTaken <= other.DamageTaken)
-                    && (current.DamageGiven > other.DamageGiven || current.DamageTaken < other.DamageTaken))
+                else if ((current.DamageGiven >= other.DamageGiven && current.HealthRemaining >= other.HealthRemaining)
+                    && (current.DamageGiven > other.DamageGiven || current.HealthRemaining > other.HealthRemaining))
                 { // current dominates other
                     // Add other to list of currents dominated genomes.
                     gByDom[i].DominatedGenomes.Add(gByDom[j]);
@@ -184,44 +184,40 @@ public class GA_NSGA2 : GeneticAlgorithm {
     public void CalculateCrowdingDistance(List<Genome> genomes)
     {
 
-        float minDT = 0.0f, maxDT = 0.0f;
+        float minHR = 0.0f, maxHR = 0.0f;
         float minDG = 0.0f, maxDG = 0.0f;
         // Get normalized min and max of the objective
         for (int i = 0; i < genomes.Count; i++)
         {
             Genome g = genomes[i];
             float DG = (float)g.DamageGiven;
-            float DT = (float)g.DamageTaken;
+            float HR = (float)g.HealthRemaining;
 
             if (DG < minDG)
                 minDG = DG;
             if (DG > maxDG)
                 maxDG = DG;
 
-            if (DT < minDT)
-                minDT = DT;
-            if (DT > maxDT)
-                maxDT = DT;
-
-            // Set normalized boundries
-            minDT = minDT / maxDT;
-            maxDT = 1.0f;
+            if (HR < minHR)
+                minHR = HR;
+            if (HR > maxHR)
+                maxHR = HR;
         }
 
         // Calculate crowding distance by DamageTaken
-        SortByDamagetaken(genomes);
+        SortByHealthRemaining(genomes);
 
         genomes[0].CrowdingDistance = genomes[genomes.Count - 1].CrowdingDistance = Mathf.Infinity;
         for (int i = 1; i < genomes.Count - 1; i++)
         {
             // Retrieve previous and next values for the objective and normalize them.
-            float next = (float)genomes[i + 1].DamageTaken;
-            float prev = (float)genomes[i - 1].DamageTaken;
-            next /= maxDT;
-            prev /= maxDT;
+            float next = (float)genomes[i + 1].HealthRemaining;
+            float prev = (float)genomes[i - 1].HealthRemaining;
+            next /= maxHR;
+            prev /= maxHR;
 
             genomes[i].CrowdingDistance
-                = genomes[i].CrowdingDistance + (next - prev) / (maxDT - minDT);
+                = genomes[i].CrowdingDistance + (next - prev) / (maxHR - minHR);
         }
 
 
@@ -265,12 +261,12 @@ public class GA_NSGA2 : GeneticAlgorithm {
         }
     }
 
-    public void SortByDamagetaken(List<Genome> genomes)
+    public void SortByHealthRemaining(List<Genome> genomes)
     {
         for (int i = 1; i < genomes.Count; i++)
         {
             int j = i;
-            while (j > 0 && genomes[j-1].DamageTaken > genomes[j].DamageTaken)
+            while (j > 0 && genomes[j-1].HealthRemaining > genomes[j].HealthRemaining)
             {
                 // Swap
                 Genome back = genomes[j - 1];
