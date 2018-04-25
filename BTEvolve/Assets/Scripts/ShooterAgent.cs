@@ -354,6 +354,7 @@ public class ShooterAgent : MonoBehaviour {
     #region Get Functions
     public AgentState StateOfAgent { get { return m_myState; } set { m_myState = value; } }
     public int TotalDamageTaken { get { return m_totalDamageTaken; } }
+    public int TotalDamageHealed { get { return m_totalDamageHealed; } }
     public int Health { get { return m_health; } }
     public int Bullets { get { return m_bulletAmount; } }
     public bool EnemyLost { get { return m_enemyLost;  } set { m_enemyLost = value; } }

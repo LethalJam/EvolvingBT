@@ -1777,7 +1777,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Version 1.5 (Anglefish)
+  m_Text: Version 1.5.1 (Anglefish)
 --- !u!222 &753999823
 CanvasRenderer:
   m_ObjectHideFlags: 0

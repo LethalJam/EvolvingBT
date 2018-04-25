@@ -150,3 +150,4 @@ c2275a8bfbb9f9942cad75ecdfded41d UnityEngine.HoloLens.dll:UnityEngine.XR.WSA.Spa
 05524b8f659e7bfe5756d1335fec24ba Assembly-CSharp.dll:.AgentBT
 61ecc2c0be21d38408dac7faabd0fd00 Assembly-CSharp.dll:.FieldClamper
 2c870006f3fc5bbbad3ac0405c6b8cf8 Assembly-CSharp.dll:.MatchSimulator
+5d28ffc634316a1a49667d258ecc72cf Assembly-CSharp.dll:.AngleTest

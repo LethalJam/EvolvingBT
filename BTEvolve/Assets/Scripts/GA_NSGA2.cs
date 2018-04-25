@@ -336,10 +336,15 @@ public class GA_NSGA2 : GeneticAlgorithm {
 
         for (int i = 1; i < genomes.Count-1; i++)
         {
+
             // Calculate angles of first and last.
             Vector2 current = new Vector2(genomes[i].DamageGiven, genomes[i].HealthRemaining);
             Vector2 next = new Vector2(genomes[i+1].DamageGiven, genomes[i+1].HealthRemaining);
             Vector2 prev = new Vector2(genomes[i - 1].DamageGiven, genomes[i - 1].HealthRemaining);
+
+            // If current is the same as prev, skip the point
+            if (Vector2.Distance(current, prev) < 0.5f)
+                continue;
 
             Vector2 nextVec = current - next;
             Vector2 prevVec = current - prev;
@@ -349,7 +354,7 @@ public class GA_NSGA2 : GeneticAlgorithm {
             // Make sure to always get the clockwise angle
             Vector3 cross = Vector3.Cross(prevVec, nextVec);
             if (cross.z > 0)
-                angle = 360 - angle;
+                angle = 360.0f - angle;
 
             // Check if neighbouring angles is the highest and save genomes as best
             // if it is.
