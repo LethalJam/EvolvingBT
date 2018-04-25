@@ -183,10 +183,9 @@ public class GA_NSGA2 : GeneticAlgorithm {
     // Function for calculating crowding distance for each genome in the given assumed front
     public void CalculateCrowdingDistance(List<Genome> genomes)
     {
-
         float minHR = 0.0f, maxHR = 0.0f;
         float minDG = 0.0f, maxDG = 0.0f;
-        // Get normalized min and max of the objective
+        // Get min and max of the objectives
         for (int i = 0; i < genomes.Count; i++)
         {
             Genome g = genomes[i];
@@ -211,8 +210,8 @@ public class GA_NSGA2 : GeneticAlgorithm {
         for (int i = 1; i < genomes.Count - 1; i++)
         {
             // Retrieve previous and next values for the objective and normalize them.
-            float next = (float)genomes[i + 1].HealthRemaining;
-            float prev = (float)genomes[i - 1].HealthRemaining;
+            float next = genomes[i + 1].HealthRemaining;
+            float prev = genomes[i - 1].HealthRemaining;
             next /= maxHR;
             prev /= maxHR;
 
@@ -228,8 +227,8 @@ public class GA_NSGA2 : GeneticAlgorithm {
         for (int i = 1; i < genomes.Count-1; i++)
         {
             // Retrieve previous and next values for the objective and normalize them.
-            float next = (float)genomes[i + 1].DamageGiven;
-            float prev = (float)genomes[i - 1].DamageGiven;
+            float next = genomes[i + 1].DamageGiven;
+            float prev = genomes[i - 1].DamageGiven;
             next /= maxDG;
             prev /= maxDG;
 
@@ -328,15 +327,38 @@ public class GA_NSGA2 : GeneticAlgorithm {
         return copy;
     }
 
-    // Return the genome with highest crowding distance among the front.
+    // Return the genome with worst tradeoff in either neighbouring direction
+    // (Based on clockwise angle between neighbouring points)
     public Genome BestFromFront (List<Genome> genomes)
     {
-        Genome best = genomes[0];
+        Genome best = genomes[genomes.Count/2];
+        float highestAngle = 0.0f;
 
-        for (int i = 1; i < genomes.Count; i++)
+        for (int i = 1; i < genomes.Count-1; i++)
         {
-            if (genomes[i].CrowdingDistance > best.CrowdingDistance)
+            // Calculate angles of first and last.
+            Vector2 current = new Vector2(genomes[i].DamageGiven, genomes[i].HealthRemaining);
+            Vector2 next = new Vector2(genomes[i+1].DamageGiven, genomes[i+1].HealthRemaining);
+            Vector2 prev = new Vector2(genomes[i - 1].DamageGiven, genomes[i - 1].HealthRemaining);
+
+            Vector2 nextVec = current - next;
+            Vector2 prevVec = current - prev;
+
+            float angle = Vector2.Angle(prevVec, nextVec);
+
+            // Make sure to always get the clockwise angle
+            Vector3 cross = Vector3.Cross(prevVec, nextVec);
+            if (cross.z > 0)
+                angle = 360 - angle;
+
+            // Check if neighbouring angles is the highest and save genomes as best
+            // if it is.
+            if (angle > highestAngle)
+            {
                 best = genomes[i];
+                highestAngle = angle;
+            }
+
         }
 
         return best;

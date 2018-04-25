@@ -13,6 +13,9 @@ public class ButtonBattle : MonoBehaviour {
     public float battleTimeScale = 1.0f;
     public int simulationMatches = 100;
 
+    public float matchLength = 120.0f;
+    private float originalMatchLength = 60.0f;
+
     // Public input fields
     public InputField matchField;
     public InputField simspeedField;
@@ -74,6 +77,8 @@ public class ButtonBattle : MonoBehaviour {
             yield return null;
         }
 
+        originalMatchLength = m_simulator.matchTime;
+        m_simulator.matchTime = matchLength;
         // Disable button canvas before starting simulation
         m_buttonCanvas.SetActive(false);
         for (int i = 0; i < simulationMatches; i++)
@@ -93,8 +98,10 @@ public class ButtonBattle : MonoBehaviour {
         ScreenCapture.CaptureScreenshot("Resultat.png");
         m_feedbackText.SetText("Single won: " + m_singleWon + ", Multi won: " + m_multiWon);
         m_buttonCanvas.SetActive(true);
-        // Reset simulation scale before yielding
+        // Reset simulation scale and matchtime before yielding
         m_simulator.liveSimulationScale = m_simulator.simulationTimeScale;
+        m_simulator.matchTime = originalMatchLength;
+
         yield return null;
     }
 

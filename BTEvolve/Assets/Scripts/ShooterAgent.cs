@@ -12,9 +12,11 @@ public class ShooterAgent : MonoBehaviour {
     private StaticGlobals m_globals;
     private float m_bulletTimer = 0.0f;
     private float m_reloadTimer = 0.0f;
+
     private int m_maxHealth = 100;
     private int m_health = 100;
     private int m_totalDamageTaken = 0;
+    private int m_totalDamageHealed = 0;
     private int m_bulletMax = 10;
     private int m_bulletAmount = 10;
 
@@ -60,6 +62,7 @@ public class ShooterAgent : MonoBehaviour {
         // Reset AI values.
         m_health = m_maxHealth;
         m_totalDamageTaken = 0;
+        m_totalDamageHealed = 0;
         m_bulletAmount = m_bulletMax;
         m_navAgent.ResetPath();
         m_myState = AgentState.patroling;
@@ -105,7 +108,14 @@ public class ShooterAgent : MonoBehaviour {
         {
             m_health += 50;
             if (m_health > m_maxHealth)
+            {
+                m_totalDamageHealed += 50 - (m_health - m_maxHealth);
                 m_health = m_maxHealth;
+            }
+            else
+                m_totalDamageHealed += 50;
+
+
             Destroy(collision.gameObject);
             m_healthPackFound = false;
         }

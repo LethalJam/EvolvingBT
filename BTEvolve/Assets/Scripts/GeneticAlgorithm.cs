@@ -576,6 +576,10 @@ public class GeneticAlgorithm : MonoBehaviour {
 
                     // Attach old comps children to the new one.
                     N_CompositionNode newComp = RandomComp();
+                    // Make sure to keep structure of subtrees
+                    if (replaceComp.IsSubtree)
+                        newComp.IsSubtree = true;
+
                     foreach (Node c in children)
                     {
                         c.Parent = newComp;
