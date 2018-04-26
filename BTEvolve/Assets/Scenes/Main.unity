@@ -1777,7 +1777,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Version 1.5.1 (Anglefish)
+  m_Text: Version 1.5.2 (Anglefish)
 --- !u!222 &753999823
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4098,7 +4098,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: test_test_test_test_test_test_test_test_test_test_test_test_
+  m_Text: test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_test_
 --- !u!222 &1937743209
 CanvasRenderer:
   m_ObjectHideFlags: 0

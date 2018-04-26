@@ -163,8 +163,6 @@ public class MatchSimulator : MonoBehaviour {
             // If either of the agents died, end the match.
             if (m_matchTimer >= matchTime)
             {
-                //if (m_matchTimer >= matchTime)
-                //    Debug.Log("Timed out at " + m_matchTimer + " sec.");
                 EndMatch();
             }
         }

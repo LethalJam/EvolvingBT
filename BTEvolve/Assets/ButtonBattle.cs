@@ -28,6 +28,10 @@ public class ButtonBattle : MonoBehaviour {
     // Match stats
     private int m_singleWon = 0;
     private int m_multiWon = 0;
+    private int m_singleDamage = 0;
+    private int m_multiDamage = 0;
+    private int m_singleHealth = 0;
+    private int m_multiHealth = 0;
 
     private void Awake()
     {
@@ -67,8 +71,10 @@ public class ButtonBattle : MonoBehaviour {
         singleBT = FileSaver.GetInstance().LoadTree(singleFilename);
         multiBT = FileSaver.GetInstance().LoadTree(multiFilename);
 
-        // Reset matches won
+        // Reset scores
         m_singleWon = m_multiWon = 0;
+        m_singleDamage = m_multiDamage = 0;
+        m_singleHealth = m_multiHealth = 0;
 
         if (singleBT == null || multiBT == null)
         {
@@ -96,7 +102,10 @@ public class ButtonBattle : MonoBehaviour {
         }
 
         ScreenCapture.CaptureScreenshot("Resultat.png");
-        m_feedbackText.SetText("Single won: " + m_singleWon + ", Multi won: " + m_multiWon);
+
+        m_feedbackText.SetText("Single won: " + m_singleWon + ", Multi won: " + m_multiWon
+            + "\n" +"Single damage: " + m_singleDamage + ", Multi damage: " + m_multiDamage
+            + "\n" + "Single health: " + m_singleHealth + ", Multi health: " + m_multiHealth);
         m_buttonCanvas.SetActive(true);
         // Reset simulation scale and matchtime before yielding
         m_simulator.liveSimulationScale = m_simulator.simulationTimeScale;
@@ -117,6 +126,12 @@ public class ButtonBattle : MonoBehaviour {
                 m_singleWon++;
             else if (agent1.winner && !agent0.winner)
                 m_multiWon++;
+
+            m_singleDamage += agent0.damageGiven;
+            m_multiDamage += agent1.damageGiven;
+
+            m_singleHealth += agent0.healthRemaining;
+            m_multiHealth += agent1.healthRemaining;
 
             battleOn = false;
         }
