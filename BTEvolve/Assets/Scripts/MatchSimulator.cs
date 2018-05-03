@@ -173,13 +173,24 @@ public class MatchSimulator : MonoBehaviour {
         m_matchInProgress = false;
         Time.timeScale = 0.0f;
         m_matchTimer = 0.0f;
-        // Damage taken/given agent0
-        result_agent0.healthRemaining = behave_agent0.Health;
+
+        // Damage given
         result_agent0.damageGiven = behave_agent1.TotalDamageTaken;
-        // Damage taken/given agent1
-        result_agent1.healthRemaining =  behave_agent1.Health;
         result_agent1.damageGiven = behave_agent0.TotalDamageTaken;
-        // Set who won If both win => draw? GA determines this.
+
+        // Healthscore
+        result_agent0.healthRemaining = 
+            behave_agent0.Health + behave_agent0.TotalDamageHealed - behave_agent0.TotalDamageTaken;
+        if (result_agent0.healthRemaining < 0)
+            result_agent0.healthRemaining = 0;
+
+        result_agent1.healthRemaining =  
+            behave_agent1.Health + behave_agent1.TotalDamageHealed - behave_agent1.TotalDamageTaken;
+        if (result_agent1.healthRemaining < 0)
+            result_agent1.healthRemaining = 0;
+ 
+
+        // Set who won If both win => draw? GA determines.
         result_agent0.winner = behave_agent0.StateOfAgent != ShooterAgent.AgentState.dead;
         result_agent1.winner = behave_agent1.StateOfAgent != ShooterAgent.AgentState.dead;
         // Invoke that a match is over.

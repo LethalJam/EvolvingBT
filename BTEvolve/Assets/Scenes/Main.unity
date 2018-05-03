@@ -1777,7 +1777,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Version 1.5.3 (Anglefish)
+  m_Text: Version 1.5.5 (SmallFix)
 --- !u!222 &753999823
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2023,8 +2023,8 @@ MonoBehaviour:
   populationSize: 100
   genomeSubtrees: 6
   tourneyContestents: 2
-  combinationRate: 0.5
-  mutationRate: 0.1
+  combinationRate: 0.8
+  mutationRate: 0.01
   minThresholdOffset: -5
   maxTresholdOffset: 5
   relativeProbabilityMutation: 40
@@ -4149,8 +4149,8 @@ MonoBehaviour:
   populationSize: 100
   genomeSubtrees: 6
   tourneyContestents: 4
-  combinationRate: 0.5
-  mutationRate: 0.1
+  combinationRate: 0.8
+  mutationRate: 0.01
   minThresholdOffset: -5
   maxTresholdOffset: 5
   relativeProbabilityMutation: 40

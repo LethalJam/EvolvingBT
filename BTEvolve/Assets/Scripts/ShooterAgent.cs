@@ -107,14 +107,9 @@ public class ShooterAgent : MonoBehaviour {
         else if (collision.tag == "healthPack" && m_healthPackFound)
         {
             m_health += 50;
+            m_totalDamageHealed += 50;
             if (m_health > m_maxHealth)
-            {
-                m_totalDamageHealed += 50 - (m_health - m_maxHealth);
-                m_health = m_maxHealth;
-            }
-            else
-                m_totalDamageHealed += 50;
-
+                m_totalDamageHealed -= (m_health - m_maxHealth);
 
             Destroy(collision.gameObject);
             m_healthPackFound = false;
@@ -267,6 +262,10 @@ public class ShooterAgent : MonoBehaviour {
     // Rotate towards target position.
     private bool AimTowards(Vector3 direction)
     {
+        // If the direction is zero, assume that the agent is already aiming in correct direction.
+        if (direction == Vector3.zero)
+            return true;
+
         // Disable rotation of agent when navigating
         Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
