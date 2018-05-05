@@ -180,12 +180,14 @@ public class MatchSimulator : MonoBehaviour {
 
         // Healthscore
         result_agent0.healthRemaining = 
-            behave_agent0.Health + behave_agent0.TotalDamageHealed - behave_agent0.TotalDamageTaken;
+            behave_agent0.Health + behave_agent0.TotalDamageHealed;
+
         if (result_agent0.healthRemaining < 0)
             result_agent0.healthRemaining = 0;
 
         result_agent1.healthRemaining =  
-            behave_agent1.Health + behave_agent1.TotalDamageHealed - behave_agent1.TotalDamageTaken;
+            behave_agent1.Health + behave_agent1.TotalDamageHealed;
+
         if (result_agent1.healthRemaining < 0)
             result_agent1.healthRemaining = 0;
  

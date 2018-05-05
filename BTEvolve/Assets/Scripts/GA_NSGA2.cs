@@ -343,7 +343,7 @@ public class GA_NSGA2 : GeneticAlgorithm {
             Vector2 prev = new Vector2(genomes[i - 1].DamageGiven, genomes[i - 1].HealthRemaining);
 
             // If current is the same as prev, skip the point
-            if (Vector2.Distance(current, prev) < 0.5f)
+            if (current == prev)
                 continue;
 
             Vector2 nextVec = current - next;
@@ -444,6 +444,7 @@ public class GA_NSGA2 : GeneticAlgorithm {
                 frontIndex++;
             }
 
+            //Debug.Log(fronts[0].Count);
             // Retrieve the best genome from front 0, used for simulation
             Genome bestBack = BestFromFront(fronts[0]);
             bestGenome = bestBack.GenomeCopy();

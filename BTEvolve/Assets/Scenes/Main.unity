@@ -1777,7 +1777,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Version 1.5.5 (SmallFix)
+  m_Text: Version 1.5.6 (O-O)
 --- !u!222 &753999823
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2024,7 +2024,7 @@ MonoBehaviour:
   genomeSubtrees: 6
   tourneyContestents: 2
   combinationRate: 0.8
-  mutationRate: 0.01
+  mutationRate: 0.02
   minThresholdOffset: -5
   maxTresholdOffset: 5
   relativeProbabilityMutation: 40
@@ -4150,7 +4150,7 @@ MonoBehaviour:
   genomeSubtrees: 6
   tourneyContestents: 4
   combinationRate: 0.8
-  mutationRate: 0.01
+  mutationRate: 0.02
   minThresholdOffset: -5
   maxTresholdOffset: 5
   relativeProbabilityMutation: 40
